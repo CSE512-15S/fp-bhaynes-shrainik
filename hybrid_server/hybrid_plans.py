@@ -8,7 +8,7 @@ class HybridPlanGenerator(object):
         self.scidb_plans = scidb_plans
         self.transfers = transfer_map
 
-    def get_query(self, query_id):
+    def get_query(self, query_id, flatten=False):
         connection = MyriaConnection(rest_url=self.myria_url)
         plan = MyriaPlan(connection.get_query_status(query_id))
 
@@ -20,7 +20,7 @@ class HybridPlanGenerator(object):
                 source = self._get_source_query(operator['source']['uri'])
                 if source: self._connect_plans(source, (plan, operator))
 
-        return plan
+        return plan if not flatten else self._flatten_subplans(plan)
 
     def _get_source_query(self, uri, type='impl_save', destination_expression='transform_'):
         match = re.search('(.*/)+(?P<name>.*)$', uri)
@@ -41,6 +41,23 @@ class HybridPlanGenerator(object):
         destination_operator['opType'] = destination_optype
         destination_operator['source']['dataType'] = source_system
         destination_operator['argChild'] = source_operator.id
+
+    @classmethod
+    def _flatten_subplans(cls, plan, flattened_type='SubQuery'):
+        if not any(plan.subplans):
+            return plan
+        else:
+            plan_json = plan.data['plan'] if 'plan' in plan.data else plan.data
+            fragment_list = plan_json['fragments'] if 'fragments' in plan_json else []
+            plan_json['fragments'] = fragment_list
+
+            for subplan in plan.subplans:
+                for fragment in subplan.fragments:
+                    fragment_list.append(fragment.data)
+            if 'plans' in plan_json: del plan_json['plans']
+            if 'body' in plan_json: del plan_json['body']
+            plan_json['type'] = flattened_type
+            return plan
 
     @classmethod
     def _get_merge_fragment_list(cls, plan):

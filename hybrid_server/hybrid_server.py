@@ -37,7 +37,7 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.end_headers()
 
-        self.wfile.write(json.dumps(self.server.hybrid_plans.get_query(query_id).data))
+        self.wfile.write(json.dumps(self.server.hybrid_plans.get_query(query_id, flatten=True).data))
 
 
 def parse_arguments(arguments):
