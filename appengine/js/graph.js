@@ -67,6 +67,8 @@ function Graph () {
             node.opNodes = {};                                          // List of graph operand nodes
             node.opLinks = {};                                          // List of graph operand edges
             node.name = "Fragment " + fragment.fragmentIndex.toString();// Name for fragment node
+            node.system = fragment.system
+            node.queryId = fragment.queryId
 
             // Process each operator
             var color_index = 0;
@@ -293,7 +295,7 @@ function Graph () {
                         y: +cols[3]-cols[5]/2,
                         w: +cols[4],
                         h: +cols[5],
-                        color: "lightgrey",
+                        color: (graph.nodes[id].system === "SciDB")? "yellow" : "lightgrey",
                         stroke: (graph.state.focus === id) ? "red" : "black"
                     };
                 } else if (id in graph.opId2fId) {
@@ -403,7 +405,7 @@ function Graph () {
                 y: minY-padding/2 - padding,
                 w: maxX-minX+padding,
                 h: maxY-minY+padding + padding,
-                color: "lightgrey",
+                color: (fragment.system === "SciDB")? "yellow" : "lightgrey",
                 stroke: (graph.state.focus === fID) ? "red" : "black"
             };
             // Add cluster
@@ -773,7 +775,7 @@ function Graph () {
 
             link.select("path.clickme")
                 .attr("d", function(d) { return line(d.points); })
-                .attr("stroke", "black")
+                .attr("stroke", "black");
 
             if (interactive) {
                 link.select("path.clickme")

@@ -69,10 +69,14 @@ function GraphAnimation (graph, scales, animationDuration, arrowSize, markerSize
           .delay(animationDuration)
           .attr('fill', function(d) { return scales.skewColor(d3.mean(d.skews || [0])); })
           .attr("d", function(d) {
+              d3.selectAll(path || 'g.link marker path:not(.skew)')
+                .tooltip(updateSkew(profiling, fragment, d) + " worker skew");
               return "M 0," + scales.skewWidth(updateSkew(profiling, fragment, d)) +
                      "V" + (arrowSize * 2) +
                      "L" + [markerSize, arrowSize] +
                      "Z"; });
+
+          d3.selectAll(path || 'g.link marker path.skew').tooltip(function(d) {return updateSkew(profiling, fragment, d) + " worker skew";});
     };
 
     GraphAnimation.prototype.createSkewHighlightPaths = function(container) {

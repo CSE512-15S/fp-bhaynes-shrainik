@@ -333,15 +333,30 @@ class Profile(MyriaPage):
         subquery_fragments = None
         if query_id != '':
             try:
-                query_status = conn.get_query_status(query_id)
+                # query_status = conn.get_query_status(query_id)
+                query_status = json.loads(requests.get("http://ec2-52-5-229-118.compute-1.amazonaws.com:8753/query/query-"+(query_id)).text)
                 query_status["subqueryId"] = subquery_id
                 subquery_fragments = conn.get_query_plan(query_id, subquery_id)
             except myria.MyriaError:
                 pass
 
         template_vars = self.base_template_vars()
+        # print query_status
+        # print len(query_status['plan']['fragments'])
+        f_count = 0
+        for frag in query_status['plan']['fragments']:
+            if frag['fragmentIndex'] < 1E6:
+                frag['fragmentIndex'] = f_count
+                f_count += 1
+            keys = frag.viewkeys()
+            if 'workers' in keys:
+                if frag['workers'] == None:
+                    frag['workers'] = []
+            else:
+                frag['workers'] = []
+        
         template_vars['queryStatus'] = json.dumps(query_status)
-        template_vars['fragments'] = json.dumps(subquery_fragments)
+        template_vars['fragments'] = json.dumps(query_status['plan']['fragments'])
         template_vars['queryId'] = query_id
         template_vars['subqueryId'] = subquery_id
 
@@ -362,15 +377,32 @@ class Execution(MyriaPage):
         subquery_fragments = None
         if query_id != '':
             try:
-                query_status = conn.get_query_status(query_id)
+                # query_status = conn.get_query_status(query_id)
+                query_status = json.loads(requests.get("http://ec2-52-5-229-118.compute-1.amazonaws.com:8750/query/query-"+(query_id)).text)
                 query_status["subqueryId"] = subquery_id
                 subquery_fragments = conn.get_query_plan(query_id, subquery_id)
             except myria.MyriaError:
                 pass
 
         template_vars = self.base_template_vars()
+        # print query_status
+        # print len(query_status['plan']['fragments'])
+        f_count = 0
+        for frag in query_status['plan']['fragments']:
+            if frag['system'] == "SciDB":
+                print frag['queryId']
+            if frag['fragmentIndex'] < 1E6:
+                frag['fragmentIndex'] = f_count
+                f_count += 1
+            keys = frag.viewkeys()
+            if 'workers' in keys:
+                if frag['workers'] == None:
+                    frag['workers'] = []
+            else:
+                frag['workers'] = []
+        
         template_vars['queryStatus'] = json.dumps(query_status)
-        template_vars['fragments'] = json.dumps(subquery_fragments)
+        template_vars['fragments'] = json.dumps(query_status['plan']['fragments'])
         template_vars['queryId'] = query_id
         template_vars['subqueryId'] = subquery_id
 
@@ -646,8 +678,8 @@ class Dot(MyriaHandler):
 
 class Application(webapp2.WSGIApplication):
     def __init__(self, debug=True,
-                 hostname='localhost',
-                 port=8753, ssl=False):
+                 hostname='ec2-52-5-229-118.compute-1.amazonaws.com',
+                 port=8750, ssl=False):
         routes = [
             ('/', RedirectToEditor),
             ('/editor', Editor),

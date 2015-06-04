@@ -15,12 +15,13 @@ function ProfilingAggregation (templates, connectionUrl, graph) {
             var url = templates.urls.profiling({
                 myria: connectionUrl,
                 query: graph.queryStatus.queryId,
-                subquery: graph.queryStatus.subqueryId,
+                subquery: (fragment.system === 'SciDB') ? fragment.queryId : graph.queryStatus.subqueryId,
                 fragment: fragmentId,
                 start: Math.round(range[0]*2)/2 * nanosPerUnit,
                 end: Math.round(range[1]*2)/2 * nanosPerUnit,
                 onlyRootOp: false,
-                minLength: 0
+                minLength: 0,
+                system: fragment.system
             });
 
             d3.csv(url, function(d) {

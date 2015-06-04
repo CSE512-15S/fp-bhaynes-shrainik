@@ -116,14 +116,14 @@ function Legend (scales, arrowSize, markerSize, width, height, offset) {
                                 legend.append("path")
                                       .attr('transform', 'translate(' + offset + ', -12)')
                                       .attr('fill', scales.skewBackgroundColor(skew))
-                                      .attr("d", "M 0,0 V " + (arrowSize * 2) + " L " + [markerSize, arrowSize] + " Z");
+                                      .attr("d", "M 0,0 V " + (arrowSize * 2) + " L " + [markerSize, arrowSize] + " Z").tooltip(skew+ " worker skew");
 
                                 legend.append('path')
                                       .attr('transform', 'translate(' + offset + ', -12)')
                                       .attr('fill', scales.skewColor(skew))
                                       .attr("d", function () {
                                         return "M 0," + scales.skewWidth(skew) + " V " + (arrowSize * 2) + " L " + [markerSize, arrowSize] + " Z";
-                                        });
+                                        }).tooltip(skew+ " worker skew");
 
                                 return offset + separation;
                             },
