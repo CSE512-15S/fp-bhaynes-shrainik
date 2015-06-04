@@ -122,6 +122,10 @@ class QueryStatement(Statement):
         return self.statements_of_type(ScatterGatherChunkStatement) or []
 
     @property
+    def transfers(self):
+        return [operator for operator in self.operators if operator.name == 'impl_save' and 'transform_' in operator.metadata['destination']]
+
+    @property
     def statements(self):
         return self.queries[self.query_id]
 
@@ -177,8 +181,8 @@ class CommittedQueryStatement(QueryStatement):
         super(CommittedQueryStatement, self).__init__(date, thread_id, tokens, tokens[1].strip('query():'))
 
 class ScatterGatherChunkStatement(QueryStatement):
-    def __init__(self, date, thread_id, tokens):
-        super(ScatterGatherChunkStatement, self).__init__(date, thread_id, tokens, QueryStatement.current_query)
+    def __init__(self, date, thread_id, tokens, query_id=None):
+        super(ScatterGatherChunkStatement, self).__init__(date, thread_id, tokens, query_id or QueryStatement.current_query)
         # PullSGArray::requestNextChunk:  stats attId=0, stream=1, numSent=172, numRecvd=173
         self.operator = self.operators[int(self._get_value(tokens[3]))]
         self.worker_id = int(self._get_value(tokens[4]))
@@ -250,17 +254,27 @@ class Operator(object):
         else:
             self.metadata = {}
 
-class QueryProfile(object):
-    def __init__(self, shuffles):
-        self.shuffles = shuffles
-        #self.start_time = max([shuffle.date for shuffle in shuffles])
-        self.end_time = max([shuffle.date for shuffle in shuffles] or [0])
+class PlanProfile(object):
+    def __init__(self, plan, workers, transfer_path):
+        self.plan = plan
+        self.workers = workers
+        self.transfer_path = transfer_path
+        self.shuffles = plan.shuffles + list(self.create_transfer_shuffles())
+        self.end_time = max([shuffle.date for shuffle in self.shuffles] or [0])
 
-def plan_map(filename):
+    def create_transfer_shuffles(self):
+        for operator in self.plan.transfers:
+            for worker_id in xrange(self.workers):
+                cardinality = sum(1 for _ in open(os.path.join(self.transfer_path, str(worker_id), operator.metadata['destination'])))
+                tokens = ['Transfer', '', 'stats', 'attId=%d' % operator.index, 'stream=%d' % worker_id, 'numSent=%d' % cardinality, 'numRecvd=0']
+                yield ScatterGatherChunkStatement(self.plan.shuffles[-1].date, None, tokens, self.plan.query_id)
+
+
+def plan_map(filename, workers, transfer_path):
     queries, profiling = {}, {}
     for plan in parse_plans(filename):
         queries[int(plan.query_id)] = plan.to_dict()
-        profiling[int(plan.query_id)] = QueryProfile(plan.shuffles)
+        profiling[int(plan.query_id)] = PlanProfile(plan, workers, transfer_path)
     return queries, profiling
 
 def parse_plans(filename):
