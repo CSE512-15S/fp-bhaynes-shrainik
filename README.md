@@ -29,10 +29,12 @@ Accordingly, the installation process requires the following steps:
 
 1. Clone this [repository](https://github.com/CSE512-15S/a3-haynesb) (`git clone https://github.com/CSE512-15S/a3-haynesb.git`)
 2. Update repository submodules (`git submodule init` and `git submodule update`)
-3. (Optional)  Update `appengine/myria_web_main.py` to point to a specific MyriaX engine (default=`demo.myria.cs.washington.edu`)
-4. Launch the webserver (`dev_appserver.py /path/to/myria-web/appengine`)
-5. Execute a query (`http://localhost:8080/editor`), making sure to select the profiling option
-6. View query profiling results
+3. Then setup the module as described in the Raco [README](https://github.com/uwescience/raco/blob/master/README.md).
+4. The PLY library used to parse programs in the Myria language uses a precompiled parsetab.py in the `raco` submodule. This file is not required, but dramatically speeds up the parser load time (which happens for every request to the app). To generate it, run `scripts/myrial examples/reachable.myl`
+5. (Optional)  Update `appengine/myria_web_main.py` to point to a specific MyriaX engine (default=`demo.myria.cs.washington.edu`)
+6. Launch the webserver (`dev_appserver.py /path/to/myria-web/appengine`)
+7. Execute a query (`http://localhost:8080/editor`), making sure to select the profiling option
+8. View query profiling results
 
 ### Demo
 
