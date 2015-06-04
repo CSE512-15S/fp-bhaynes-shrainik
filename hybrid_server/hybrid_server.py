@@ -60,14 +60,14 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def get_hybrid_profile(self, system, query_id, subquery_id, fragment_id, start_time, end_time, only_root, minimum_length):
         if system == 'Myria':
             self.send_response(301)
-            self.send_header('Location', self._create_myria_profiling_url(self.PROFILE_PATH,
-                                                                          queryId=query_id,
-                                                                          subqueryId=subquery_id,
-                                                                          fragmentId=fragment_id,
-                                                                          start=start_time,
-                                                                          end=end_time,
-                                                                          onlyRootOperator=only_root,
-                                                                          minimumLength=minimum_length))
+            self.send_header('Location', self._create_myria_url(self.PROFILE_PATH,
+                                                                queryId=query_id,
+                                                                subqueryId=subquery_id,
+                                                                fragmentId=fragment_id,
+                                                                start=start_time,
+                                                                end=end_time,
+                                                                onlyRootOperator=only_root,
+                                                                minimumLength=minimum_length))
             self.end_headers()
         elif system == 'SciDB' and subquery_id:
             self.send_response(200)
@@ -94,27 +94,37 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         else:
             self.send_response(404)
 
-    def get_hybrid_aggregated_sent(self, system, query_id, subquery_id):
+    def get_hybrid_aggregated_sent(self, system, query_id, subquery_id, fragment_id):
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.end_headers()
+
         if system == 'Myria':
             self.send_response(301)
             self.send_header('Location', self._create_myria_profiling_url(self.PROFILE_PATH, queryId=query_id, subqueryId=subquery_id))
             self.end_headers()
         elif system == 'SciDB' and subquery_id:
             self.send_response(200)
-            self.send_header("Content-type", "application/json")
-            self.send_header("Access-Control-Allow-Origin", "*")
-            self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
-            self.send_header("Access-Control-Allow-Headers", "Content-Type")
             self.end_headers()
 
-            self.wfile.write('foo')
+            self.wfile.write('fragmentId,numTuples,duration\n')
+            profile = self.server.scidb_profiling[int(subquery_id)]
+            cardinality = sum([shuffle.cardinality for shuffle in profile.shuffles])
+            duration = profile.end_time - profile.shuffles[0].start_time
+
+            self.wfile.write('{fragmentId},{numTuples},{duration}\n'.format(
+                             fragmentId=fragment_od,
+                             numTuples=cardinality,
+                             duration=duration))
         else:
+            self.end_headers()
             self.send_response(404)
 
     def _create_myria_url(self, path, **kwargs):
         querystring = '&'.join(['='.join(map(urllib.quote_plus, map(str, pair))) for pair in kwargs.items()])
         # Should use urlparse, but am being lazy...
-        return '{}/{}?{}'.format(self.myria_url, path, querystring)
+        return '{}/{}?{}'.format(self.server.myria_url, path, querystring)
 
     @staticmethod
     def _extract_profiling_arguments(path):
@@ -135,7 +145,8 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         querystring = urlparse.parse_qs(url.query)
         return (querystring.get('system', [None])[0],
                 int(querystring.get('queryId', [0])[0]),
-                int(querystring.get('subqueryId', [0])[0]))
+                int(querystring.get('subqueryId', [0])[0]),
+                querystring.get('fragmentId', [-1])[0]))
 
 def parse_arguments(arguments):
     parser = argparse.ArgumentParser(description='Launch webserver that serves hybrid plans')
