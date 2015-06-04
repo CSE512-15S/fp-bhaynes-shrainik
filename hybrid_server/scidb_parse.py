@@ -6,8 +6,6 @@ from collections import defaultdict
 from datetime import datetime
 
 class Log(object):
-    OFFSET_FILE = 'last_offset'
-
     def __init__(self, filename, offset_filename=None):
         self.filename = filename
         self.offset_filename = offset_filename
@@ -72,6 +70,8 @@ class Parser(object):
             return PhysicalQueryPlan(date, thread_id, tokens, source)
         elif 'is being committed' in body:
             return CommittedQueryStatement(date, thread_id, tokens)
+        elif 'PullSGArray::requestNextChunk' in body:
+            return ScatterGatherChunkStatement(date, thread_id, tokens)
         else:
             return UnknownStatement(date, thread_id, tokens)
 
@@ -88,8 +88,6 @@ class Statement(object):
         self.body = ' '.join(tokens)
 
 class QueryStatement(Statement):
-    SCIDB_OFFSET = int(1E6)
-
     queries = defaultdict(list)
     current_query = None
 
@@ -101,23 +99,34 @@ class QueryStatement(Statement):
 
     @property
     def start_time(self):
-        statements = self._statements(InitializedQueryStatement)
+        statements = self.statements_of_type(InitializedQueryStatement)
         return statements[0].date if statements else None
 
     @property
     def end_time(self):
-        statements = self._statements(CommittedQueryStatement)
+        statements = self.statements_of_type(CommittedQueryStatement)
         return statements[0].date if statements else None
 
     @property
     def query_text(self):
-        statements = self._statements(ParsedQueryStatement)
+        statements = self.statements_of_type(ParsedQueryStatement)
         return statements[0]._query_text if statements else None
 
     @property
     def operators(self):
-        statements = self._statements(PhysicalQueryPlan)
-        return statements[0]._operators() if statements else None
+        statements = self.statements_of_type(PhysicalQueryPlan)
+        return statements[0]._get_operators() if statements else None
+
+    @property
+    def shuffles(self):
+        return self.statements_of_type(ScatterGatherChunkStatement) or []
+
+    @property
+    def statements(self):
+        return self.queries[self.query_id]
+
+    def statements_of_type(self, type):
+        return [s for s in self.statements if isinstance(s, type)]
 
     def to_dict(self):
         return {
@@ -142,20 +151,17 @@ class QueryStatement(Statement):
                 'type': 'SubQuery',
                 'fragments': [{
                     'system': 'SciDB',
-                    'fragmentIndex': self.SCIDB_OFFSET,
+                    'fragmentIndex': -1,
                     'overrideWorkers': None,
                     'operators': [dict({
-                        'opId': op.id + self.SCIDB_OFFSET,
+                        'opId': op.id,
                         'opName': op.name,
-                        'opType': op.name,
-                        'argChild': op.children[0].id if op.children else None
-                    }, **op.metadata) for op in self.operators or []]
+                        'opType': op.name
+                    }, **dict({'argChild': op.children[0].id} if op.children else {},
+                              **op.metadata)) for op in self.operators or []]
                 }]
             }
         }
-
-    def _statements(self, type):
-        return [s for s in self.queries[self.query_id] if isinstance(s, type)]
 
 class InitializedQueryStatement(QueryStatement):
     def __init__(self, date, thread_id, tokens):
@@ -170,21 +176,42 @@ class CommittedQueryStatement(QueryStatement):
     def __init__(self, date, thread_id, tokens):
         super(CommittedQueryStatement, self).__init__(date, thread_id, tokens, tokens[1].strip('query():'))
 
+class ScatterGatherChunkStatement(QueryStatement):
+    def __init__(self, date, thread_id, tokens):
+        super(ScatterGatherChunkStatement, self).__init__(date, thread_id, tokens, QueryStatement.current_query)
+        # PullSGArray::requestNextChunk:  stats attId=0, stream=1, numSent=172, numRecvd=173
+        self.operator = self.operators[int(self._get_value(tokens[3]))]
+        self.worker_id = int(self._get_value(tokens[4]))
+        self.cardinality = int(self._get_value(tokens[5])) + int(self._get_value(tokens[6]))
+
+    @staticmethod
+    def _get_value(token):
+        return token.split('=')[1].strip(',')
+
+    def to_dict(self):
+        return {
+            'query_id': int(self.query_id),
+            'worker_id': self.worker_id,
+            'dateTime': self.date.isoformat() if self.date else None,
+            'cardinality': self.cardinality
+        }
+
 class PhysicalQueryPlan(QueryStatement):
     def __init__(self, date, thread_id, tokens, source):
         super(PhysicalQueryPlan, self).__init__(date, thread_id, tokens, QueryStatement.current_query)
         self.plan = self._get_plan(source)
+        self._operators = []
 
-    def _operators(self):
-        operators = []
-        for id, (level, name, line) in enumerate([(len(line) - len(line.strip('>')), line.split(' ')[1], line) for line in self.plan if '[pNode]' in line]):
-            parent = [op for op in operators if op.level == level - 1][-1] if operators else None
-            operators.append(Operator(id, name, level, self, ' '.split(line), self.plan[id+2:], parent))
+    def _get_operators(self):
+        if not self._operators:
+            for index, (level, name, line) in enumerate([(len(line) - len(line.strip('>')), line.split(' ')[1], line) for line in self.plan if '[pNode]' in line]):
+                parent = [op for op in self._operators if op.level == level - 1][-1] if self._operators else None
+                self._operators.append(Operator(index, name, level, self, ' '.split(line), self.plan[index+2:], parent))
 
-        for operator in operators:
-            operator.children = [op for op in operators if op.parent == operator]
+            for operator in self._operators:
+                operator.children = [op for op in self._operators if op.parent == operator]
 
-        return operators
+        return self._operators
 
     def _get_plan(self, source):
         plan = []
@@ -204,8 +231,13 @@ class UnknownStatement(Statement):
         super(UnknownStatement, self).__init__(date, thread_id, tokens)
 
 class Operator(object):
-    def __init__(self, id, name, level, statement, tokens, detail, parent, children=None):
-        self.id = id
+    SCIDB_OFFSET = int(1E6)
+    unique_id = 0
+
+    def __init__(self, index, name, level, statement, tokens, detail, parent, children=None):
+        Operator.unique_id += 1
+        self.id = self.unique_id + self.SCIDB_OFFSET
+        self.index = index
         self.name = name
         self.level = level
         self.statement = statement
@@ -218,11 +250,18 @@ class Operator(object):
         else:
             self.metadata = {}
 
+class QueryProfile(object):
+    def __init__(self, shuffles):
+        self.shuffles = shuffles
+        #self.start_time = max([shuffle.date for shuffle in shuffles])
+        self.end_time = max([shuffle.date for shuffle in shuffles] or [0])
+
 def plan_map(filename):
-    queries = {}
+    queries, profiling = {}, {}
     for plan in parse_plans(filename):
         queries[int(plan.query_id)] = plan.to_dict()
-    return queries
+        profiling[int(plan.query_id)] = QueryProfile(plan.shuffles)
+    return queries, profiling
 
 def parse_plans(filename):
     parser = Parser()
@@ -234,4 +273,19 @@ def parse_plans(filename):
 
 if __name__ == "__main__":
     for plan in parse_plans('/home/bhaynes/scidb.log'):
-        print json.dumps(plan.to_dict())
+        profile = QueryProfile(plan.shuffles)
+
+        print 'workerId,opId,startTime,endTime,numTuples'
+        for shuffle in plan.shuffles:
+            print 'Plan start:  %s' % plan.start_time
+            print 'Shuffle:     %s (%s)' % (shuffle.date, (shuffle.date - plan.start_time).total_seconds())
+            print 'End Shuffle: %s' % profile.end_time
+            print ''
+            print '{workerId},{opId},{startTime},{endTime},{numTuples}'.format(
+                             workerId=shuffle.worker_id,
+                             opId=shuffle.operator.id,
+                             startTime=int((shuffle.date - plan.start_time).total_seconds() * 1E9),
+                             endTime=int((profile.end_time - plan.start_time).total_seconds() * 1E9),
+                             numTuples=shuffle.cardinality)
+        print '-----'
+        #print json.dumps(plan.to_dict())

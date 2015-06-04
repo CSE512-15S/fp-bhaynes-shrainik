@@ -11,6 +11,7 @@ class HybridPlanGenerator(object):
     def get_query(self, query_id, flatten=False):
         connection = MyriaConnection(rest_url=self.myria_url)
         plan = MyriaPlan(connection.get_query_status(query_id))
+        source_plans = {}
 
         for fragment in plan.fragments:
             fragment.data['system'] = 'Myria'
@@ -18,7 +19,12 @@ class HybridPlanGenerator(object):
         for operator in plan.operators:
             if operator.type == 'FileScan' and 'scidb' in operator['source']['uri']:
                 source = self._get_source_query(operator['source']['uri'])
-                if source: self._connect_plans(source, (plan, operator))
+                if source:
+                    self._connect_operators(source_plans, source, (plan, operator))
+
+        for source_plan in source_plans.values():
+            for source_fragment in source_plan.fragments:
+                self._connect_fragments(plan, source_fragment)
 
         return plan if not flatten else self._flatten_subplans(plan)
 
@@ -33,14 +39,19 @@ class HybridPlanGenerator(object):
         return (query, operators[0]) if operators else None
 
     @classmethod
-    def _connect_plans(cls, (source_plan, source_operator), (destination_plan, destination_operator)):
-        cls._get_merge_fragment_list(destination_plan).extend([f.data for f in source_plan.fragments])
+    def _connect_fragments(cls, destination_plan, source_fragment):
+        source_fragment.data['queryId'] = source_fragment.plan.data['queryId']
+        cls._get_merge_fragment_list(destination_plan).append(source_fragment.data)
+
+    @classmethod
+    def _connect_operators(cls, source_plans, (source_plan, source_operator), (destination_plan, destination_operator)):
+        source_plans[source_plan.data['queryId']] = source_plan
         source_system = source_plan.fragments.next().data['system']
         destination_optype = source_system + 'Scan'
         destination_operator['opName'] = destination_operator['opName'].replace(destination_operator.type, destination_optype)
         destination_operator['opType'] = destination_optype
         destination_operator['source']['dataType'] = source_system
-        destination_operator['argChild'] = source_operator.id
+        destination_operator['argOperatorId'] = source_operator.id
 
     @classmethod
     def _flatten_subplans(cls, plan, flattened_type='SubQuery'):
