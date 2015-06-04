@@ -1,0 +1,327 @@
+html {
+  overflow: -moz-scrollbars-vertical;
+  overflow-y: scroll;
+}
+
+.popover {
+  max-width: 400px;
+}
+
+.popover-content {
+  max-height: 600px;
+  overflow-y: auto;
+  overflow-x: auto;
+  padding: 0 0;
+  font-size: .9em;
+}
+
+.popover pre {
+  padding: 2px;
+  margin: 0;
+  font-size: 0.9em;
+}
+
+.popover table {
+  margin-bottom: 0;
+}
+
+.table-responsive table tr td:nth-child(1) {
+  max-width: 150px;
+  word-wrap: break-word;
+}
+
+.table-responsive table tr td:nth-child(2) {
+  max-width: 250px;
+  word-wrap: break-word;
+}
+
+svg .muted {
+  fill: darkgray;
+}
+
+svg .strong {
+  font-weight: bold;
+}
+
+/* General */
+
+svg {
+  font: 11px sans-serif;
+  shape-rendering: auto;
+}
+
+rect.background {
+  fill: white;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.ruler {
+  position: fixed;
+  display: none;
+  top: 0px;
+  bottom: 0px;
+  width: 1px;
+  pointer-events: none;
+
+  background: #000;
+  opacity: .3;
+  z-index: 2;
+}
+
+.rulerInfo rect {
+  fill: black;
+  fill-opacity: .8;
+}
+
+.rulerInfo text {
+  font-size: 12px;
+  fill: white;
+}
+
+.node rect {
+  stroke-width: 1.5px;
+}
+
+.edgeLabel rect {
+  fill: #fff;
+}
+
+.edgePath {
+  stroke: #333;
+  stroke-width: 1.5px;
+  fill: none;
+}
+
+.tooltip-inner {
+    max-width: 250px;
+}
+
+.panel-heading .breadcrumb {
+  padding: 0;
+  margin: 0;
+}
+
+svg .help-text {
+  font-size: 14px;
+  fill: #888;
+}
+
+.graph-panel .panel-body {
+  padding: 0;
+}
+
+/* Graph */
+
+.query-plan .overlay {
+  fill: transparent;
+  stroke: #bbb;
+  stroke-width: 1px;
+}
+
+.query-graph {
+  shape-rendering: auto;
+}
+
+.query-graph rect {
+  stroke-width: 2;
+}
+
+.interactive .cluster:hover, .interactive .fragment:hover {
+  cursor: pointer;
+}
+
+.interactive .cluster:hover .node-rect, .interactive .fragment:hover .node-rect {
+  transition: stroke .1s, fill .1s;
+  stroke: orange;
+  fill: #ddd;
+}
+
+.query-graph .node {
+  transition: fill .1s;
+}
+
+.query-graph .node text {
+  fill: black;
+  font-size: 14px;
+}
+
+.query-graph .node .node-label rect, .map .bg-rect {
+  fill: white;
+  opacity: 0.8;
+}
+
+.query-graph .link > path {
+  fill: transparent;
+}
+
+.query-graph path.clickme {
+  stroke-width: 25;
+  opacity: 0;
+}
+
+.interactive .frag:hover>path:not(.clickme) {
+  transition: stroke .1s, fill .1s;
+  stroke: orange;
+}
+
+.interactive .frag:hover marker {
+  transition: stroke .1s, fill .1s;
+  fill:orange;
+}
+
+.rect-info {
+  fill: white;
+  stroke: #333;
+  stroke-width: 2;
+}
+
+.expand-circle {
+  fill: lightgreen;
+  stroke: green;
+  stroke-width: 2;
+}
+
+/* Fragment vis */
+
+.area {
+  fill: #444;
+  shape-rendering: auto;
+}
+
+.overview-fragment .x.axis .tick line, .details .x.axis .tick line {
+  stroke: lightgrey;
+  opacity: 0.7;
+}
+
+.overview-fragment .x.axis .tick text {
+  fill: #555;
+}
+
+.plot path.line {
+  fill: none;
+  stroke: #1f77b4;
+  stroke-width: 0px;
+}
+
+.brush .extent {
+  fill: steelblue;
+  fill-opacity: .1;
+  stroke: steelblue;
+  stroke-opacity: 0.7;
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.chart .context .brush .resize rect {
+  fill: steelblue;
+  fill-opacity: .8;
+  visibility: visible !important;
+}
+
+.brush .resize rect {
+  fill: #333;
+}
+
+.overview-fragment .chart .x.axis path {
+  display: none;
+}
+
+.axis-label {
+  fill: black;
+  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+}
+
+.zoom-button {
+  cursor: pointer;
+}
+
+.zoom-button rect {
+  fill: lightgray;
+}
+
+.zoom-button text {
+  fill: black;
+  font-size: 18px;
+}
+
+.overlay {
+  cursor: move;
+}
+
+/* Network */
+
+.focus circle {
+  fill: none;
+  stroke: steelblue;
+}
+
+.pixel.can-click {
+  cursor: pointer;
+}
+
+.pixel.active {
+  stroke-width: 3px;
+}
+
+.timeseries .tsline {
+  fill: none;
+  shape-rendering: auto;
+}
+
+.timeseries .x.axis path {
+  display: none;
+}
+
+.matrix-chart .tick {
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.mat-chart text {
+  fill: black;
+  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+  font-size: 13px;
+}
+
+.controls button {
+	margin-right: 30px;
+}
+
+.matrix-chart .bars rect {
+	fill: #333;
+}
+
+.matrix-chart .average {
+  stroke: steelblue;
+  stroke-width: 2;
+}
+
+.controls select {
+	margin-left: 4px;
+}
+
+#legend {
+  margin-top: 10px;
+}
+
+.controls {
+	margin: 10px 0;
+}
+
+/* Map */
+.map .node {
+  /*border: solid 4px black;*/
+  font: 10px sans-serif;
+  color: black;
+  line-height: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: absolute;
+  text-indent: 4px;
+}
