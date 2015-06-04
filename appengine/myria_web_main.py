@@ -334,7 +334,7 @@ class Profile(MyriaPage):
         if query_id != '':
             try:
                 # query_status = conn.get_query_status(query_id)
-                query_status = json.loads(requests.get("http://ec2-52-5-229-118.compute-1.amazonaws.com:8753/query/query-"+(query_id)).text)
+                query_status = json.loads(requests.get("http://ec2-52-5-229-118.compute-1.amazonaws.com:8750/query/query-"+(query_id)).text)
                 query_status["subqueryId"] = subquery_id
                 subquery_fragments = conn.get_query_plan(query_id, subquery_id)
             except myria.MyriaError:
@@ -679,7 +679,7 @@ class Dot(MyriaHandler):
 class Application(webapp2.WSGIApplication):
     def __init__(self, debug=True,
                  hostname='ec2-52-5-229-118.compute-1.amazonaws.com',
-                 port=8750, ssl=False):
+                 port=8753, ssl=False):
         routes = [
             ('/', RedirectToEditor),
             ('/editor', Editor),
