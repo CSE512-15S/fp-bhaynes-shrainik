@@ -9,6 +9,7 @@ import re
 import urllib
 import urlparse
 import argparse
+from dateutil.parser import parse
 import logging
 import transfer_parse
 import scidb_parse
@@ -20,6 +21,7 @@ class HybridTCPServer(SocketServer.TCPServer):
 
         self.myria_url = myria_url
         self.logger = logging.getLogger('HybridTCPServer')
+        self.start_times = {}
 
         self.logger.debug('Beginning SciDB log parse')
         self.scidb_workers = scidb_workers
@@ -37,6 +39,7 @@ class HybridTCPServer(SocketServer.TCPServer):
 class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     QUERY_PATTERN = r'query/query-(?P<id>\d+)$'
     PROFILE_PATH = r'logs/profiling'
+    RANGE_PATH = r'logs/range'
     AGGREGATED_PATH = r'logs/aggregated_sent'
     HISTOGRAM_PATH = r'histogram'
 
@@ -50,6 +53,8 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             self.get_hybrid_aggregated_sent(*self._extract_aggregated_sent_arguments(self.path))
         elif re.search(self.HISTOGRAM_PATH, self.path) is not None:
             self.get_hybrid_histogram(*self._extract_histogram_arguments(self.path))
+        elif re.search(self.RANGE_PATH, self.path) is not None:
+            self.get_hybrid_range(*self._extract_range_arguments(self.path))
         else:
             self.send_response(404)
 
@@ -164,6 +169,35 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             self.send_access_control_headers()
             self.end_headers()
 
+    def get_hybrid_range(self, system, query_id, subquery_id, fragment_id):
+        if system == 'Myria':
+            self.send_response(301)
+            self.send_access_control_headers()
+            self.send_header('Location', self._create_myria_url(self.RANGE_PATH,
+                                                                queryId=query_id,
+                                                                subqueryId=subquery_id,
+                                                                fragmentId=fragment_id))
+            self.end_headers()
+        elif system == 'SciDB' and subquery_id:
+            self.send_response(200)
+            self.send_access_control_headers()
+            self.end_headers()
+
+            if query_id not in self.server.start_times:
+                self.server.start_times[query_id] = parse(self.server.hybrid_plans.get_query(query_id).data['startTime']).replace(tzinfo = None)
+            profile = self.server.scidb_profiling[int(subquery_id)]
+
+            self.wfile.write('min_startTime,max_endTime\n')
+            self.wfile.write('{},{}\n'.format(
+                max(int((profile.plan.start_time - self.server.start_times[query_id]).total_seconds() * 1E9), 0),
+                max(int((profile.plan.end_time - self.server.start_times[query_id]).total_seconds() * 1E9), 0)))
+        else:
+            self.send_response(404)
+            self.send_access_control_headers()
+            self.end_headers()
+
+#nocatgw.cs.washington.edu - - [05/Jun/2015 21:20:05] "GET /logs/contribution?queryId=5099&subqueryId=0&fragmentId=9 HTTP/1.1" 404 -
+
     def _create_myria_url(self, path, **kwargs):
         querystring = '&'.join(['='.join(map(urllib.quote_plus, map(str, pair))) for pair in kwargs.items()])
         # Should use urlparse, but am being lazy...
@@ -208,6 +242,15 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 int(querystring.get('end', [0])[0]),
                 querystring.get('onlyRootOp', [None])[0],
                 int(querystring.get('step', [0])[0]))
+
+    @staticmethod
+    def _extract_range_arguments(path):
+        url = urlparse.urlparse(path)
+        querystring = urlparse.parse_qs(url.query)
+        return (querystring.get('system', [None])[0],
+                int(querystring.get('queryId', [0])[0]),
+                int(querystring.get('subqueryId', [0])[0]),
+                querystring.get('fragmentId', [-1])[0])
 
 def parse_arguments(arguments):
     parser = argparse.ArgumentParser(description='Launch webserver that serves hybrid plans')
