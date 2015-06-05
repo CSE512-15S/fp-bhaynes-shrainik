@@ -2,7 +2,7 @@ function Legend (scales, arrowSize, markerSize, width, height, offset) {
   "use strict";
 
   width = width || 520;
-  height = height || 95;
+  height = height || 115;
   offset = offset || 14;
 
   Legend.prototype.render = function(svg) {
@@ -62,6 +62,9 @@ function Legend (scales, arrowSize, markerSize, width, height, offset) {
       root.append('g').attr('transform', 'translate(12, 79)')
                       .attr('opacity', 0)
                       .call(_.bind(workerSkewLegend, this, scales));
+      root.append('g').attr('transform', 'translate(12, 105)')
+                      .attr('opacity', 0)
+                      .call(_.bind(fragmentTypeLegend, this, scales));
   };
 
   function tuplesEmittedLegend(scales, legend) {
@@ -102,6 +105,33 @@ function Legend (scales, arrowSize, markerSize, width, height, offset) {
                             legend.select('text').node().getBoundingClientRect().width + margin);
 
       legend.append('text').attr('transform', 'translate(' + (offset + margin) + ')').text('> 90% time in operator');
+  }
+
+  function fragmentTypeLegend(scales, legend){
+    legend.append('text').text('SciDB Fragment');
+    legend.append("rect")
+          .attr('opacity', 1)
+          .attr('rx', 5)
+          .attr('ry', 5)
+          .attr('width', 80)
+          .attr('height', 20)
+          .attr('fill', 'lightblue')
+          .attr('stroke', 'black')
+          .attr('transform', 'translate(100, -15)')
+          .attr('style', 'stroke: rgb(0, 0, 0); stroke-width: 1px;')
+
+    legend.append('text').attr('transform', 'translate(210)').text('Myria Fragment'); 
+
+    legend.append("rect")
+          .attr('opacity', 1)
+          .attr('rx', 5)
+          .attr('ry', 5)
+          .attr('width', 80)
+          .attr('height', 20)
+          .attr('fill', 'lightgray')
+          .attr('stroke', 'black')
+          .attr('transform', 'translate(305, -15)')
+          .attr('style', 'stroke: rgb(0, 0, 0); stroke-width: 1px;')
   }
 
   function workerSkewLegend(scales, legend) {
