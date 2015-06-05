@@ -210,8 +210,10 @@ var lineChart = function(element, fragmentId, numWorkers, operators, callback, g
         var url = templates.urls.histogram({
             myria: myriaConnection,
             query: graph.queryStatus.queryId,
+            subquery: (graph.fragments[fragmentId].system === 'SciDB') ? graph.fragments[fragmentId].queryId : graph.queryStatus.subqueryId,
             subquery: graph.queryStatus.subqueryId,
             fragment: fragmentId,
+            system: graph.fragments[fragmentId].system,
             start: start,
             end: end,
             step: step,

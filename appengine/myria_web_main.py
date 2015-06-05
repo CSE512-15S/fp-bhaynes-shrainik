@@ -389,8 +389,6 @@ class Execution(MyriaPage):
         # print len(query_status['plan']['fragments'])
         f_count = 0
         for frag in query_status['plan']['fragments']:
-            if frag['system'] == "SciDB":
-                print frag['queryId']
             if frag['fragmentIndex'] < 1E6:
                 frag['fragmentIndex'] = f_count
                 f_count += 1
@@ -679,7 +677,7 @@ class Dot(MyriaHandler):
 class Application(webapp2.WSGIApplication):
     def __init__(self, debug=True,
                  hostname='ec2-52-5-229-118.compute-1.amazonaws.com',
-                 port=8753, ssl=False):
+                 port=8750, ssl=False):
         routes = [
             ('/', RedirectToEditor),
             ('/editor', Editor),

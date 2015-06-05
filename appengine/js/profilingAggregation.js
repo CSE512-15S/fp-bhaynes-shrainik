@@ -16,6 +16,7 @@ function ProfilingAggregation (templates, connectionUrl, graph) {
                 myria: connectionUrl,
                 query: graph.queryStatus.queryId,
                 subquery: (fragment.system === 'SciDB') ? fragment.queryId : graph.queryStatus.subqueryId,
+                system: graph.fragments[fragmentId].system,
                 fragment: fragmentId,
                 start: Math.round(range[0]*2)/2 * nanosPerUnit,
                 end: Math.round(range[1]*2)/2 * nanosPerUnit,

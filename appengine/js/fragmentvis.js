@@ -221,7 +221,8 @@ function drawLineChart(element, fragmentId, graph, numWorkers, lanesChart) {
         var url = templates.urls.histogram({
             myria: myriaConnection,
             query: graph.queryStatus.queryId,
-            subquery: graph.queryStatus.subqueryId,
+            subquery: (graph.fragments[fragmentId].system === 'SciDB') ? graph.fragments[fragmentId].queryId : graph.queryStatus.subqueryId,
+            system: graph.fragments[fragmentId].system,
             fragment: fragmentId,
             start: start,
             end: end,
@@ -283,7 +284,8 @@ function drawLineChart(element, fragmentId, graph, numWorkers, lanesChart) {
     var url = templates.urls.range({
             myria: myriaConnection,
             query: graph.queryStatus.queryId,
-            subquery: graph.queryStatus.subqueryId,
+            subquery: (graph.fragments[fragmentId].system === 'SciDB') ? graph.fragments[fragmentId].queryId : graph.queryStatus.subqueryId,
+            system: graph.fragments[fragmentId].system,
             fragment: fragmentId
         });
     d3.csv(url, function(d) {
@@ -488,8 +490,9 @@ function drawLanes(element, fragmentId, graph, numWorkers, idNameMapping, levels
          var url = templates.urls.profiling({
             myria: myriaConnection,
             query: graph.queryStatus.queryId,
-            subquery: graph.queryStatus.subqueryId,
+            subquery: (graph.fragments[fragmentId].system === 'SciDB') ? graph.fragments[fragmentId].queryId : graph.queryStatus.subqueryId,
             fragment: fragmentId,
+            system: graph.fragments[fragmentId].system,
             start: range[0],
             end: range[1],
             onlyRootOp: tooLarge,

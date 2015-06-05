@@ -2,7 +2,8 @@ var updateQueryStats = function(element, queryStatus) {
     var shuffleUrl = templates.urls.aggregatedSentData({
             myria: myriaConnection,
             query: queryStatus.queryId,
-            subquery: queryStatus.subqueryId
+            subquery: queryStatus.subqueryId,
+            system: 'Myria'
         });
 
     d3.csv(shuffleUrl, function(d) {

@@ -32,7 +32,8 @@ var operatorVisualization = function (element, fragmentId, graph) {
     var url = templates.urls.contribution({
         myria: myriaConnection,
         query: graph.queryStatus.queryId,
-        subquery: graph.queryStatus.subqueryId,
+        subquery: (graph.fragments[fragmentId].system === 'SciDB') ? graph.fragments[fragmentId].queryId : graph.queryStatus.subqueryId,
+        system: graph.fragments[fragmentId].system,
         fragment: fragmentId
     });
 

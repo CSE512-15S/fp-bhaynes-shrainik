@@ -184,7 +184,8 @@ function Graph () {
         var url = templates.urls.aggregatedSentData({
             myria: myriaConnection,
             query: self.queryStatus.queryId,
-            subquery: self.queryStatus.subqueryId
+            subquery: self.queryStatus.subqueryId,
+            system: 'Myria'
         });
 
         d3.csv(url, function(d) {
