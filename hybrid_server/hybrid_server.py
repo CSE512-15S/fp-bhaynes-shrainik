@@ -41,6 +41,7 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     PROFILE_PATH = r'logs/profiling'
     RANGE_PATH = r'logs/range'
     AGGREGATED_PATH = r'logs/aggregated_sent'
+    CONTRIBUTION_PATH = r'logs/contribution'
     HISTOGRAM_PATH = r'histogram'
 
     def do_GET(self):
@@ -55,6 +56,8 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             self.get_hybrid_histogram(*self._extract_histogram_arguments(self.path))
         elif re.search(self.RANGE_PATH, self.path) is not None:
             self.get_hybrid_range(*self._extract_range_arguments(self.path))
+        elif re.search(self.CONTRIBUTION_PATH, self.path) is not None:
+            self.get_hybrid_contribution(*self._extract_contribution_arguments(self.path))
         else:
             self.send_response(404)
 
@@ -190,7 +193,38 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             self.wfile.write('min_startTime,max_endTime\n')
             self.wfile.write('{},{}\n'.format(
                 max(int((profile.plan.start_time - self.server.start_times[query_id]).total_seconds() * 1E9), 0),
-                max(int((profile.plan.end_time - self.server.start_times[query_id]).total_seconds() * 1E9), 0)))
+                max(int((profile.plan.end_time - self.server.start_times[query_id]).total_seconds() * 1E9),
+                    int((profile.plan.end_time - profile.plan.start_time).total_seconds() * 1E9))))
+        else:
+            self.send_response(404)
+            self.send_access_control_headers()
+            self.end_headers()
+
+    def get_hybrid_contribution(self, system, query_id, subquery_id, fragment_id):
+        if system == 'Myria':
+            self.send_response(301)
+            self.send_access_control_headers()
+            self.send_header('Location', self._create_myria_url(self.CONTRIBUTION_PATH,
+                                                                queryId=query_id,
+                                                                subqueryId=subquery_id,
+                                                                fragmentId=fragment_id))
+            self.end_headers()
+        elif system == 'SciDB' and subquery_id:
+            self.send_response(200)
+            self.send_access_control_headers()
+            self.end_headers()
+
+            durations = defaultdict(int)
+            profile = self.server.scidb_profiling[int(subquery_id)]
+            total_duration = int((profile.plan.end_time - profile.plan.start_time).total_seconds() * 1E9)
+
+            for shuffle in profile.shuffles:
+                durations[shuffle.operator.id] += int((shuffle.date - shuffle.start_time).total_seconds() * 1E9)
+
+            self.wfile.write('opId,nanoTime\n')
+            for operator in profile.plan.operators:
+                durations[operator.id] += max(total_duration / len(profile.plan.operators), 0)
+                self.wfile.write('{},{}\n'.format(operator.id, durations[operator.id]))
         else:
             self.send_response(404)
             self.send_access_control_headers()
@@ -245,6 +279,15 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     @staticmethod
     def _extract_range_arguments(path):
+        url = urlparse.urlparse(path)
+        querystring = urlparse.parse_qs(url.query)
+        return (querystring.get('system', [None])[0],
+                int(querystring.get('queryId', [0])[0]),
+                int(querystring.get('subqueryId', [0])[0]),
+                querystring.get('fragmentId', [-1])[0])
+
+    @staticmethod
+    def _extract_contribution_arguments(path):
         url = urlparse.urlparse(path)
         querystring = urlparse.parse_qs(url.query)
         return (querystring.get('system', [None])[0],
