@@ -47,8 +47,8 @@ class Log(object):
                 f.write(str(offset))
 
 class Parser(object):
-    def __init__(self):
-        pass
+    def __init__(self, workers):
+        self.workers = workers
 
     def parse(self, statement, source):
         if not statement.startswith('2015'):
@@ -63,17 +63,17 @@ class Parser(object):
             body = ' '.join(tokens)
 
         if body.startswith('Initialized query'):
-            return InitializedQueryStatement(date, thread_id, tokens)
+            return InitializedQueryStatement(self.workers, date, thread_id, tokens)
         elif body.startswith('Parsing query'):
-            return ParsedQueryStatement(date, thread_id, tokens)
+            return ParsedQueryStatement(self.workers, date, thread_id, tokens)
         elif body.startswith('The physical plan is detected'):
-            return PhysicalQueryPlan(date, thread_id, tokens, source)
+            return PhysicalQueryPlan(self.workers, date, thread_id, tokens, source)
         elif 'is being committed' in body:
-            return CommittedQueryStatement(date, thread_id, tokens)
+            return CommittedQueryStatement(self.workers, date, thread_id, tokens)
         elif 'PullSGArray::requestNextChunk' in body:
-            return ScatterGatherChunkStatement(date, thread_id, tokens)
+            return ScatterGatherChunkStatement(self.workers, date, thread_id, tokens)
         else:
-            return UnknownStatement(date, thread_id, tokens)
+            return UnknownStatement(self.workers, date, thread_id, tokens)
 
 
 
@@ -81,7 +81,8 @@ class Parser(object):
         return ' '.join(tokens)
 
 class Statement(object):
-    def __init__(self, date, thread_id, tokens):
+    def __init__(self, workers, date, thread_id, tokens):
+        self.workers = workers
         self.date = date
         self.thread_id = thread_id
         self.tokens = tokens
@@ -91,8 +92,8 @@ class QueryStatement(Statement):
     queries = defaultdict(list)
     current_query = None
 
-    def __init__(self, date, thread_id, tokens, query_id):
-        super(QueryStatement, self).__init__(date, thread_id, tokens)
+    def __init__(self, workers, date, thread_id, tokens, query_id):
+        super(QueryStatement, self).__init__(workers, date, thread_id, tokens)
         self.query_id = query_id
         QueryStatement.current_query = query_id
         QueryStatement.queries[query_id].append(self)
@@ -157,6 +158,7 @@ class QueryStatement(Statement):
                     'system': 'SciDB',
                     'fragmentIndex': -1,
                     'overrideWorkers': None,
+                    'workers': range(self.workers),
                     'operators': [dict({
                         'opId': op.id,
                         'opName': op.name,
@@ -168,21 +170,21 @@ class QueryStatement(Statement):
         }
 
 class InitializedQueryStatement(QueryStatement):
-    def __init__(self, date, thread_id, tokens):
-        super(InitializedQueryStatement, self).__init__(date, thread_id, tokens, tokens[2].strip('()\n'))
+    def __init__(self, workers, date, thread_id, tokens):
+        super(InitializedQueryStatement, self).__init__(workers, date, thread_id, tokens, tokens[2].strip('()\n'))
 
 class ParsedQueryStatement(QueryStatement):
-    def __init__(self, date, thread_id, tokens):
-        super(ParsedQueryStatement, self).__init__(date, thread_id, tokens, tokens[1].strip('query():'))
+    def __init__(self, workers, date, thread_id, tokens):
+        super(ParsedQueryStatement, self).__init__(workers, date, thread_id, tokens, tokens[1].strip('query():'))
         self._query_text = ' '.join(tokens[2:])
 
 class CommittedQueryStatement(QueryStatement):
-    def __init__(self, date, thread_id, tokens):
-        super(CommittedQueryStatement, self).__init__(date, thread_id, tokens, tokens[1].strip('query():'))
+    def __init__(self, workers, date, thread_id, tokens):
+        super(CommittedQueryStatement, self).__init__(workers, date, thread_id, tokens, tokens[1].strip('query():'))
 
 class ScatterGatherChunkStatement(QueryStatement):
-    def __init__(self, date, thread_id, tokens, query_id=None):
-        super(ScatterGatherChunkStatement, self).__init__(date, thread_id, tokens, query_id or QueryStatement.current_query)
+    def __init__(self, workers, date, thread_id, tokens, query_id=None):
+        super(ScatterGatherChunkStatement, self).__init__(workers, date, thread_id, tokens, query_id or QueryStatement.current_query)
         # PullSGArray::requestNextChunk:  stats attId=0, stream=1, numSent=172, numRecvd=173
         self.operator = self.operators[int(self._get_value(tokens[3]))]
         self.worker_id = int(self._get_value(tokens[4]))
@@ -201,8 +203,8 @@ class ScatterGatherChunkStatement(QueryStatement):
         }
 
 class PhysicalQueryPlan(QueryStatement):
-    def __init__(self, date, thread_id, tokens, source):
-        super(PhysicalQueryPlan, self).__init__(date, thread_id, tokens, QueryStatement.current_query)
+    def __init__(self, workers, date, thread_id, tokens, source):
+        super(PhysicalQueryPlan, self).__init__(workers, date, thread_id, tokens, QueryStatement.current_query)
         self.plan = self._get_plan(source)
         self._operators = []
 
@@ -227,12 +229,12 @@ class PhysicalQueryPlan(QueryStatement):
         return plan
 
 class EmptyStatement(Statement):
-    def __init__(self, date, thread_id, tokens):
-        super(EmptyStatement, self).__init__(date, thread_id, tokens)
+    def __init__(self, workers, date, thread_id, tokens):
+        super(EmptyStatement, self).__init__(workers, date, thread_id, tokens)
 
 class UnknownStatement(Statement):
-    def __init__(self, date, thread_id, tokens):
-        super(UnknownStatement, self).__init__(date, thread_id, tokens)
+    def __init__(self, workers, date, thread_id, tokens):
+        super(UnknownStatement, self).__init__(workers, date, thread_id, tokens)
 
 class Operator(object):
     SCIDB_OFFSET = int(1E6)
@@ -267,18 +269,18 @@ class PlanProfile(object):
             for worker_id in xrange(self.workers):
                 cardinality = sum(1 for _ in open(os.path.join(self.transfer_path, str(worker_id), operator.metadata['destination'])))
                 tokens = ['Transfer', '', 'stats', 'attId=%d' % operator.index, 'stream=%d' % worker_id, 'numSent=%d' % cardinality, 'numRecvd=0']
-                yield ScatterGatherChunkStatement(self.plan.shuffles[-1].date, None, tokens, self.plan.query_id)
+                yield ScatterGatherChunkStatement(self.workers, self.plan.shuffles[-1].date, None, tokens, self.plan.query_id)
 
 
 def plan_map(filename, workers, transfer_path):
     queries, profiling = {}, {}
-    for plan in parse_plans(filename):
+    for plan in parse_plans(filename, workers):
         queries[int(plan.query_id)] = plan.to_dict()
         profiling[int(plan.query_id)] = PlanProfile(plan, workers, transfer_path)
     return queries, profiling
 
-def parse_plans(filename):
-    parser = Parser()
+def parse_plans(filename, workers):
+    parser = Parser(workers)
     with Log(filename) as log:
         for line in log:
             statement = parser.parse(line, log)
@@ -286,7 +288,7 @@ def parse_plans(filename):
                  yield statement
 
 if __name__ == "__main__":
-    for plan in parse_plans('/home/bhaynes/scidb.log'):
+    for plan in parse_plans('/home/bhaynes/scidb.log', 4):
         profile = QueryProfile(plan.shuffles)
 
         print 'workerId,opId,startTime,endTime,numTuples'
