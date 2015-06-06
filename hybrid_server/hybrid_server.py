@@ -42,7 +42,7 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     RANGE_PATH = r'logs/range'
     AGGREGATED_PATH = r'logs/aggregated_sent'
     CONTRIBUTION_PATH = r'logs/contribution'
-    HISTOGRAM_PATH = r'histogram'
+    HISTOGRAM_PATH = r'logs/histogram'
 
     def do_GET(self):
         match = re.search(self.QUERY_PATTERN, self.path)
@@ -59,7 +59,13 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         elif re.search(self.CONTRIBUTION_PATH, self.path) is not None:
             self.get_hybrid_contribution(*self._extract_contribution_arguments(self.path))
         else:
-            self.send_response(404)
+            self.redirect(self.server.myria_url + self.path)
+
+    def do_POST(self):
+        self.send_response(307)
+        self.send_access_control_headers()
+        self.send_header('Location', self.server.myria_url + self.path)
+        self.end_headers()
 
     def get_hybrid_query(self, query_id):
         self.send_response(200 if query_id else 404)
@@ -111,7 +117,7 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         if system == 'Myria':
             self.send_response(301)
             self.send_access_control_headers()
-            self.send_header('Location', self._create_myria_profiling_url(self.PROFILE_PATH, queryId=query_id, subqueryId=subquery_id))
+            self.send_header('Location', self._create_myria_url(self.AGGREGATED_PATH, queryId=query_id, subqueryId=subquery_id))
             self.end_headers()
         elif system == 'SciDB' and subquery_id:
             self.send_response(200)
@@ -152,7 +158,7 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             self.wfile.write('opId,nanoTime,numWorkers\n')
             profile = self.server.scidb_profiling[int(subquery_id)]
             bins = xrange(start_time, end_time, step_size)
-            histogram = defaultdict(int)
+            histogram = defaultdict(set)
 
             for shuffle in profile.shuffles:
                 shuffle_start = int((shuffle.date     - shuffle.start_time).total_seconds() * 1E9)
@@ -161,11 +167,11 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                     bin_end = bin_start + step_size
                     if bin_start <= shuffle_start and bin_end > shuffle_start or \
                        bin_start < shuffle_end    and bin_end > shuffle_end:
-                       histogram[(shuffle.operator.id, bin_start)] += 1
+                       histogram[(shuffle.operator.id, bin_start)].add(shuffle.worker_id)
 
             print histogram
             for (operator_id, bin_start), workers in histogram.items():
-                self.wfile.write('{},{},{}\n'.format(operator_id, bin_start, workers))
+                self.wfile.write('{},{},{}\n'.format(operator_id, bin_start, len(workers)))
 
         else:
             self.send_response(404)
@@ -189,12 +195,14 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             if query_id not in self.server.start_times:
                 self.server.start_times[query_id] = parse(self.server.hybrid_plans.get_query(query_id).data['startTime']).replace(tzinfo = None)
             profile = self.server.scidb_profiling[int(subquery_id)]
+            total_duration = int((profile.plan.end_time - profile.plan.start_time).total_seconds() * 1E9)
+            total_shuffle = sum(((s.date - s.start_time).total_seconds() for s in profile.shuffles) * 1E9)
 
             self.wfile.write('min_startTime,max_endTime\n')
             self.wfile.write('{},{}\n'.format(
                 max(int((profile.plan.start_time - self.server.start_times[query_id]).total_seconds() * 1E9), 0),
                 max(int((profile.plan.end_time - self.server.start_times[query_id]).total_seconds() * 1E9),
-                    int((profile.plan.end_time - profile.plan.start_time).total_seconds() * 1E9))))
+                    total_duration + total_shuffle)))
         else:
             self.send_response(404)
             self.send_access_control_headers()
@@ -241,6 +249,12 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
+
+    def redirect(self, path):
+        self.send_response(301)
+        self.send_access_control_headers()
+        self.send_header('Location', path)
+        self.end_headers()
 
     @staticmethod
     def _extract_profiling_arguments(path):

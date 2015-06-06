@@ -6,7 +6,7 @@ function BrushSlider (domain, interval, onInterval, onValueChanged) {
         brush  = d3.svg.brush(),
         handle,
         value  = 0,
-        playing = true;
+        playing = false;
 
     onInterval = onInterval || function() {};
     onValueChanged = onInterval || function() {};
