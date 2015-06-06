@@ -349,12 +349,16 @@ class Profile(MyriaPage):
                 frag['fragmentIndex'] = f_count
                 f_count += 1
             keys = frag.viewkeys()
-            if 'workers' in keys:
-                if frag['workers'] == None:
-                    frag['workers'] = []
-            else:
-                frag['workers'] = []
-        
+            #if 'workers' in keys:
+            #    if frag['workers'] == None:
+            #        frag['workers'] = []
+            #else:
+            #    frag['workers'] = []
+
+        # Ugh -- hack
+        for fragment, subquery_fragment in zip(query_status['plan']['fragments'], subquery_fragments):
+            fragment['workers'] = subquery_fragment['workers']
+
         template_vars['queryStatus'] = json.dumps(query_status)
         template_vars['fragments'] = json.dumps(query_status['plan']['fragments'])
         template_vars['queryId'] = query_id
@@ -393,12 +397,16 @@ class Execution(MyriaPage):
                 frag['fragmentIndex'] = f_count
                 f_count += 1
             keys = frag.viewkeys()
-            if 'workers' in keys:
-                if frag['workers'] == None:
-                    frag['workers'] = []
-            else:
-                frag['workers'] = []
-        
+            #if 'workers' in keys:
+            #    if frag['workers'] == None:
+            #        frag['workers'] = []
+            #else:
+            #    frag['workers'] = []
+
+        # Ugh -- hack
+        for fragment, subquery_fragment in zip(query_status['plan']['fragments'], subquery_fragments):
+            fragment['workers'] = subquery_fragment['workers']
+
         template_vars['queryStatus'] = json.dumps(query_status)
         template_vars['fragments'] = json.dumps(query_status['plan']['fragments'])
         template_vars['queryId'] = query_id
