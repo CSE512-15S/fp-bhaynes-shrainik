@@ -77,17 +77,14 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     def get_hybrid_profile(self, system, query_id, subquery_id, fragment_id, start_time, end_time, only_root, minimum_length):
         if system == 'Myria':
-            self.send_response(301)
-            self.send_access_control_headers()
-            self.send_header('Location', self._create_myria_url(self.PROFILE_PATH,
-                                                                queryId=query_id,
-                                                                subqueryId=subquery_id,
-                                                                fragmentId=fragment_id,
-                                                                start=start_time,
-                                                                end=end_time,
-                                                                onlyRootOperator=only_root,
-                                                                minimumLength=minimum_length))
-            self.end_headers()
+            self.redirect(self._create_myria_url(self.PROFILE_PATH,
+                                                 queryId=query_id,
+                                                 subqueryId=subquery_id,
+                                                 fragmentId=fragment_id,
+                                                 start=start_time,
+                                                 end=end_time,
+                                                 onlyRootOp=only_root,
+                                                 minimumLength=minimum_length))
         elif system == 'SciDB' and subquery_id:
             self.send_response(200)
             self.send_access_control_headers()
@@ -115,10 +112,7 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     def get_hybrid_aggregated_sent(self, system, query_id, subquery_id, fragment_id):
         if system == 'Myria':
-            self.send_response(301)
-            self.send_access_control_headers()
-            self.send_header('Location', self._create_myria_url(self.AGGREGATED_PATH, queryId=query_id, subqueryId=subquery_id))
-            self.end_headers()
+            self.redirect(self._create_myria_url(self.AGGREGATED_PATH, queryId=query_id, subqueryId=subquery_id))
         elif system == 'SciDB' and subquery_id:
             self.send_response(200)
             self.send_access_control_headers()
@@ -139,17 +133,14 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     def get_hybrid_histogram(self, system, query_id, subquery_id, fragment_id, start_time, end_time, only_root, step_size):
         if system == 'Myria':
-            self.send_response(301)
-            self.send_access_control_headers()
-            self.send_header('Location', self._create_myria_url(self.HISTOGRAM_PATH,
-                                                                queryId=query_id,
-                                                                subqueryId=subquery_id,
-                                                                fragmentId=fragment_id,
-                                                                start=start_time,
-                                                                end=end_time,
-                                                                onlyRootOperator=only_root,
-                                                                step=step_size))
-            self.end_headers()
+            self.redirect(self._create_myria_url(self.HISTOGRAM_PATH,
+                                                 queryId=query_id,
+                                                 subqueryId=subquery_id,
+                                                 fragmentId=fragment_id,
+                                                 start=start_time,
+                                                 end=end_time,
+                                                 onlyRootOp=only_root,
+                                                 step=step_size))
         elif system == 'SciDB' and subquery_id:
             self.send_response(200)
             self.send_access_control_headers()
@@ -180,13 +171,10 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     def get_hybrid_range(self, system, query_id, subquery_id, fragment_id):
         if system == 'Myria':
-            self.send_response(301)
-            self.send_access_control_headers()
-            self.send_header('Location', self._create_myria_url(self.RANGE_PATH,
-                                                                queryId=query_id,
-                                                                subqueryId=subquery_id,
-                                                                fragmentId=fragment_id))
-            self.end_headers()
+            self.redirect(self._create_myria_url(self.RANGE_PATH,
+                                                 queryId=query_id,
+                                                 subqueryId=subquery_id,
+                                                 fragmentId=fragment_id))
         elif system == 'SciDB' and subquery_id:
             self.send_response(200)
             self.send_access_control_headers()
@@ -210,13 +198,10 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     def get_hybrid_contribution(self, system, query_id, subquery_id, fragment_id):
         if system == 'Myria':
-            self.send_response(301)
-            self.send_access_control_headers()
-            self.send_header('Location', self._create_myria_url(self.CONTRIBUTION_PATH,
-                                                                queryId=query_id,
-                                                                subqueryId=subquery_id,
-                                                                fragmentId=fragment_id))
-            self.end_headers()
+            self.redirect(self._create_myria_url(self.CONTRIBUTION_PATH,
+                                                 queryId=query_id,
+                                                 subqueryId=subquery_id,
+                                                 fragmentId=fragment_id))
         elif system == 'SciDB' and subquery_id:
             self.send_response(200)
             self.send_access_control_headers()
@@ -251,7 +236,7 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
 
     def redirect(self, path):
-        self.send_response(301)
+        self.send_response(302)
         self.send_access_control_headers()
         self.send_header('Location', path)
         self.end_headers()
