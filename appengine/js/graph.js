@@ -6,7 +6,7 @@ var queryGraphInteractive = function (element, queryStatus, fragments, callback)
     graphObj.loadQueryPlan(queryStatus, fragments);
     graphObj.loadCosts(function() {
         svg = graphObj.render(element, chartElement);
-//        graphObj.openOverview();
+        graphObj.openOverview();
         callback(graphObj, svg);
     });
     return graphObj;
