@@ -148,21 +148,21 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
             self.wfile.write('opId,nanoTime,numWorkers\n')
             profile = self.server.scidb_profiling[int(subquery_id)]
-            bins = xrange(start_time, end_time, step_size)
+            bins = xrange(start_time, end_time, step_size or 100)
             histogram = defaultdict(set)
 
             for shuffle in profile.shuffles:
-                shuffle_start = int((shuffle.date     - shuffle.start_time).total_seconds() * 1E6)
-                shuffle_end =   int((profile.end_time - shuffle.start_time).total_seconds() * 1E6)
+                if not only_root or not shuffle.operator.parent:
+                    shuffle_start = int((shuffle.date     - shuffle.start_time).total_seconds() * 1E6)
+                    shuffle_end =   int((profile.end_time - shuffle.start_time).total_seconds() * 1E9)
 
-                for bin_start in bins:
-                    bin_end = bin_start + step_size
-                    if bin_start <= shuffle_start and bin_end > shuffle_start or \
-                       bin_start < shuffle_end    and bin_end > shuffle_end or \
-                       bin_start > shuffle_start  and bin_end < shuffle_end:
-                       histogram[(shuffle.operator.children[0].id if shuffle.operator.children else shuffle.operator.id, bin_start)].add(shuffle.worker_id)
+                    for bin_start in bins:
+                        bin_end = bin_start + step_size
+                        if bin_start <= shuffle_start and bin_end > shuffle_start or \
+                           bin_start < shuffle_end    and bin_end > shuffle_end or \
+                           bin_start > shuffle_start  and bin_end < shuffle_end:
+                           histogram[(shuffle.operator.children[0].id if shuffle.operator.children else shuffle.operator.id, bin_start)].add(shuffle.worker_id)
 
-            print histogram
             for (operator_id, bin_start), workers in histogram.items():
                 self.wfile.write('{},{},{}\n'.format(operator_id, bin_start, len(workers)))
 
@@ -186,12 +186,12 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 self.server.start_times[query_id] = parse(self.server.hybrid_plans.get_query(query_id).data['startTime']).replace(tzinfo = None)
             profile = self.server.scidb_profiling[int(subquery_id)]
             total_duration = int((profile.plan.end_time - profile.plan.start_time).total_seconds() * 1E9)
-            total_shuffle = sum(((s.date - s.start_time).total_seconds() for s in profile.shuffles) * 1E9)
+            total_shuffle = sum(((s.date - s.start_time).total_seconds() * 1E9 for s in profile.shuffles))
 
             self.wfile.write('min_startTime,max_endTime\n')
             self.wfile.write('{},{}\n'.format(
-                max(int((profile.plan.start_time - self.server.start_times[query_id]).total_seconds() * 1E9), 0),
-                max(int((profile.plan.end_time - self.server.start_times[query_id]).total_seconds() * 1E9),
+                max(int((profile.plan.start_time - self.server.start_times[query_id]).total_seconds() * 1E6), 0),
+                max(int((profile.plan.end_time - self.server.start_times[query_id]).total_seconds() * 1E6),
                     total_duration + total_shuffle)))
         else:
             self.send_response(404)
