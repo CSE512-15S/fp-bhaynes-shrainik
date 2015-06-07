@@ -1,3 +1,8 @@
+.scidb-logo {
+  border-radius: 8px;
+  margin-left: 1em;
+}
+
 .navbar-inverse .navbar-brand {
 	padding-top: 5px;
 	padding-bottom: 5px;
