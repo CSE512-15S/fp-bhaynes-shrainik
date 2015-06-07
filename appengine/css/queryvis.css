@@ -139,7 +139,6 @@ svg .help-text {
 .interactive .cluster:hover .node-rect, .interactive .fragment:hover .node-rect {
   transition: stroke .1s, fill .1s;
   stroke: orange;
-  fill: #ddd;
 }
 
 .query-graph .node {

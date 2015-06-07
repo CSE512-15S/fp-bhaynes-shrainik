@@ -115,12 +115,12 @@ function Legend (scales, arrowSize, markerSize, width, height, offset) {
           .attr('ry', 5)
           .attr('width', 80)
           .attr('height', 20)
-          .attr('fill', 'lightblue')
+          .attr('fill', '#a6cee3')
           .attr('stroke', 'black')
           .attr('transform', 'translate(100, -15)')
           .attr('style', 'stroke: rgb(0, 0, 0); stroke-width: 1px;')
 
-    legend.append('text').attr('transform', 'translate(210)').text('Myria Fragment'); 
+    legend.append('text').attr('transform', 'translate(210)').text('Myria Fragment');
 
     legend.append("rect")
           .attr('opacity', 1)
@@ -128,7 +128,7 @@ function Legend (scales, arrowSize, markerSize, width, height, offset) {
           .attr('ry', 5)
           .attr('width', 80)
           .attr('height', 20)
-          .attr('fill', 'lightgray')
+          .attr('fill', '#cab2d6')
           .attr('stroke', 'black')
           .attr('transform', 'translate(305, -15)')
           .attr('style', 'stroke: rgb(0, 0, 0); stroke-width: 1px;')

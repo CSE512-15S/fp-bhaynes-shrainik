@@ -296,7 +296,7 @@ function Graph () {
                         y: +cols[3]-cols[5]/2,
                         w: +cols[4],
                         h: +cols[5],
-                        color: (graph.nodes[id].system === "SciDB")? "lightblue" : "lightgrey",
+                        color: (graph.nodes[id].system === "SciDB")? "#a6cee3" : "#cab2d6",
                         stroke: (graph.state.focus === id) ? "red" : "black"
                     };
                 } else if (id in graph.opId2fId) {
@@ -406,7 +406,7 @@ function Graph () {
                 y: minY-padding/2 - padding,
                 w: maxX-minX+padding,
                 h: maxY-minY+padding + padding,
-                color: (fragment.system === "SciDB")? "lightblue" : "lightgrey",
+                color: (fragment.system === "SciDB")? "#a6cee3" : "#cab2d6",
                 stroke: (graph.state.focus === fID) ? "red" : "black"
             };
             // Add cluster
