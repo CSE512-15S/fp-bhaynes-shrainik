@@ -674,7 +674,7 @@ function Graph () {
 
             node.select(".node-label text")
                 .text(function(d) {
-                    return d.name + ' (' + d.rawData.system + ')';
+                    return d.name;
                 })
                 .transition().duration(animationDuration)
                 .transition().duration(shortDuration)
