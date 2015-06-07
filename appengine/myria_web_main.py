@@ -28,6 +28,7 @@ from demo3_examples import demo3_examples
 from pagination import Pagination, QUERIES_PER_PAGE
 
 import myria
+from google.appengine.api import urlfetch
 
 # We need a (global) lock on the Myrial parser because yacc is not Threadsafe.
 # .. see uwescience/datalogcompiler#39
@@ -326,6 +327,7 @@ class Queries(MyriaPage):
 class Profile(MyriaPage):
 
     def get(self):
+        urlfetch.set_default_fetch_deadline(45)
         conn = self.app.connection
         query_id = self.request.get("queryId")
         subquery_id = self.request.get("subqueryId", 0)
@@ -374,6 +376,7 @@ class Profile(MyriaPage):
 class Execution(MyriaPage):
 
     def get(self):
+        urlfetch.set_default_fetch_deadline(45)
         conn = self.app.connection
         query_id = self.request.get("queryId")
         subquery_id = self.request.get("subqueryId", 0)
