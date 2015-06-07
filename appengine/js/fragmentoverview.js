@@ -20,7 +20,7 @@ var manyLineCharts = function(element, fragmentIds, graph) {
         var h = div.append("h4")
 
         h.append("a").attr("href", "#")
-            .text(templates.fragmentTitle({fragment: fragmentId}))
+            .text(templates.fragmentTitle({fragment: fragmentId, system: graph.nodes['f'+fragmentId].system }))
             .tooltip("Open detailed execution view")
             .on("click", function(a) {
                 d3.event.stopPropagation();
