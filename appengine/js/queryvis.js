@@ -3,8 +3,7 @@ var templates = {
     //*/
     urls: {
         sentData: _.template("<%- myria %>/logs/sent?queryId=<%- query %>&subqueryId=<%- subquery %>&fragmentId=<%- fragment %>"),
-        aggregatedSentData: _.template("<%- myria %>/logs/aggregated_sent?queryId=<%- query %>&subqueryId=<%- subquery %>&system=<%- system %>"),
-        // aggregatedSentData: _.template("<%- myria %>/logs/aggregated_sent?queryId=<%- query %>&subqueryId=<%- subquery %>&system=<%- system %>&fragmentId=<%- fragmentId %>"),
+        aggregatedSentData: _.template("<%- myria %>/logs/aggregated_sent?queryId=<%- query %>&subqueryId=<%- subquery %>&system=<%- system %>&fragmentId=<%- fragmentId %>"),
         profiling: _.template("<%- myria %>/logs/profiling?queryId=<%- query %>&subqueryId=<%- subquery %>&fragmentId=<%- fragment %>&start=<%- start %>&end=<%- end %>&onlyRootOp=<%- onlyRootOp %>&minLength=<%- minLength %>&system=<%- system %>"),
         range: _.template("<%- myria %>/logs/range?queryId=<%- query %>&subqueryId=<%- subquery %>&fragmentId=<%- fragment %>&system=<%- system %>"),
         contribution: _.template("<%- myria %>/logs/contribution?queryId=<%- query %>&subqueryId=<%- subquery %>&fragmentId=<%- fragment %>&system=<%- system %>"),

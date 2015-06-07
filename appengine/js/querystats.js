@@ -8,8 +8,8 @@ var updateQueryStats = function(element, queryStatus) {
 
         var items = "";
         items += templates.defItem({key: "Running time:", value: customFullTimeFormat(elapsedNanos, false)});
-        items += templates.defItem({key: "# shuffled tuples:", value: Intl.NumberFormat().format(shuffledTuples)});
         items += templates.defItem({key: "# transferred elements:", value: Intl.NumberFormat().format(transferredTuples)});
+        items += templates.defItem({key: "# shuffled tuples:", value: Intl.NumberFormat().format(shuffledTuples)});
         var dl = templates.defList({items: items});
         $(".query-stats").append(dl);
     }
@@ -19,7 +19,8 @@ var updateQueryStats = function(element, queryStatus) {
                 myria: myriaConnection,
                 query: queryId,
                 subquery: data[0],
-                system: data[1]
+                fragmentIndex: data[1],
+                system: data[2]
             });
 
         d3.csv(shuffleUrl, function(d) {d.numTuples = +d.numTuples; return d; },
@@ -38,9 +39,9 @@ var updateQueryStats = function(element, queryStatus) {
             })
     }
 
-    getTuples(queryStatus.queryId, [queryStatus.subqueryId, 'Myria'], function(data) {
+    getTuples(queryStatus.queryId, [queryStatus.subqueryId, -1, 'Myria'], function(data) {
         var shuffledTuples = data.reduce(function(a,b) { return a + b.numTuples; }, 0);
-        var transferQueryData = _.map(queryStatus.plan.fragments, function(f) { return [f.queryId, f.system] });
+        var transferQueryData = _.map(queryStatus.plan.fragments, function(f) { return [f.queryId, f.fragmentIndex, f.system] });
 
         getTransferredElements(queryStatus.queryId, transferQueryData, 0, function(transferredTuples) {
             instantiateStats(element, shuffledTuples, transferredTuples, queryStatus.elapsedNanos);

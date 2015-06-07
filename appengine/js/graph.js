@@ -185,6 +185,7 @@ function Graph () {
             myria: myriaConnection,
             query: self.queryStatus.queryId,
             subquery: self.queryStatus.subqueryId,
+            fragmentId: -1,
             system: 'Myria'
         });
 
