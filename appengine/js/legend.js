@@ -65,6 +65,7 @@ function Legend (scales, arrowSize, markerSize, width, height, offset) {
       root.append('g').attr('transform', 'translate(12, 105)')
                       .attr('opacity', 0)
                       .call(_.bind(fragmentTypeLegend, this, scales));
+      toggleLegend(root, height, width)
   };
 
   function tuplesEmittedLegend(scales, legend) {
