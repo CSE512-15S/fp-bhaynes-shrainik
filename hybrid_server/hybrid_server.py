@@ -152,13 +152,15 @@ class HybridPlanHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             histogram = defaultdict(set)
 
             for shuffle in profile.shuffles:
-                shuffle_start = int((shuffle.date     - shuffle.start_time).total_seconds() * 1E9)
-                shuffle_end =   int((profile.end_time - shuffle.start_time).total_seconds() * 1E9)
+                shuffle_start = int((shuffle.date     - shuffle.start_time).total_seconds() * 1E6)
+                shuffle_end =   int((profile.end_time - shuffle.start_time).total_seconds() * 1E6)
+
                 for bin_start in bins:
                     bin_end = bin_start + step_size
                     if bin_start <= shuffle_start and bin_end > shuffle_start or \
-                       bin_start < shuffle_end    and bin_end > shuffle_end:
-                       histogram[(shuffle.operator.id, bin_start)].add(shuffle.worker_id)
+                       bin_start < shuffle_end    and bin_end > shuffle_end or \
+                       bin_start > shuffle_start  and bin_end < shuffle_end:
+                       histogram[(shuffle.operator.children[0].id if shuffle.operator.children else shuffle.operator.id, bin_start)].add(shuffle.worker_id)
 
             print histogram
             for (operator_id, bin_start), workers in histogram.items():
