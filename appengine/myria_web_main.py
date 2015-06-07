@@ -334,7 +334,7 @@ class Profile(MyriaPage):
         if query_id != '':
             try:
                 # query_status = conn.get_query_status(query_id)
-                query_status = json.loads(requests.get("http://ec2-52-5-229-118.compute-1.amazonaws.com:8750/query/query-"+(query_id), timeout=10).text)
+                query_status = json.loads(requests.get("http://ec2-52-5-229-118.compute-1.amazonaws.com:8750/query/query-"+(query_id), timeout=15).text)
                 query_status["subqueryId"] = subquery_id
                 subquery_fragments = conn.get_query_plan(query_id, subquery_id)
             except myria.MyriaError:
@@ -382,7 +382,7 @@ class Execution(MyriaPage):
         if query_id != '':
             try:
                 # query_status = conn.get_query_status(query_id)
-                query_status = json.loads(requests.get("http://ec2-52-5-229-118.compute-1.amazonaws.com:8750/query/query-"+(query_id), timeout=10).text)
+                query_status = json.loads(requests.get("http://ec2-52-5-229-118.compute-1.amazonaws.com:8750/query/query-"+(query_id), timeout=15).text)
                 query_status["subqueryId"] = subquery_id
                 subquery_fragments = conn.get_query_plan(query_id, subquery_id)
             except myria.MyriaError:
