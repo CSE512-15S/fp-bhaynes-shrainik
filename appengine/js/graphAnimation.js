@@ -71,7 +71,7 @@ function GraphAnimation (graph, scales, animationDuration, arrowSize, markerSize
           .attr("d", function(d) {
               d3.selectAll(path || 'g.link marker path:not(.skew)')
                 .tooltip(updateSkew(profiling, fragment, d) + " worker skew");
-              return "M 0," + scales.skewWidth(updateSkew(profiling, fragment, d)) +
+              return "M 0," + (arrowSize * 2 - 4) +
                      "V" + (arrowSize * 2) +
                      "L" + [markerSize, arrowSize] +
                      "Z"; });

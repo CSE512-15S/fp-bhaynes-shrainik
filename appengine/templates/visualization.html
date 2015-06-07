@@ -94,7 +94,6 @@
                                                    .interpolate(d3.interpolateHsl)
                                                    .range(["black", '#AAA']),
                 skewColor: d3.interpolateHsl("black", d3.rgb(227, 26, 28)),
-                skewWidth: d3.scale.linear().rangeRound([0, arrowSize * 2 - 4]).clamp(true)
             };
 
 			theGraph = queryGraphInteractive(element, queryStatus, fragments, function(graph, svg) {

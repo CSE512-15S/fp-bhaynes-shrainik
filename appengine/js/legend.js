@@ -153,7 +153,7 @@ function Legend (scales, arrowSize, markerSize, width, height, offset) {
                                       .attr('transform', 'translate(' + offset + ', -12)')
                                       .attr('fill', scales.skewColor(skew))
                                       .attr("d", function () {
-                                        return "M 0," + scales.skewWidth(skew) + " V " + (arrowSize * 2) + " L " + [markerSize, arrowSize] + " Z";
+                                        return "M 0," + (arrowSize * 2 - 4) + " L " + [markerSize, arrowSize] + " Z";
                                         }).tooltip(skew+ " worker skew");
 
                                 return offset + separation;

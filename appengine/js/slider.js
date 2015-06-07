@@ -19,6 +19,7 @@ function BrushSlider (domain, interval, onInterval, onValueChanged) {
         scale.range([0, container.node().getBoundingClientRect().width - margin.left - margin.right]);
         renderControls(container);
         renderSlider(container);
+        onInterval(slider);
     }
 
     function renderControls(container) {
