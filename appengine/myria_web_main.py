@@ -28,6 +28,7 @@ from demo3_examples import demo3_examples
 from pagination import Pagination, QUERIES_PER_PAGE
 
 import myria
+from google.appengine.api import urlfetch
 
 # We need a (global) lock on the Myrial parser because yacc is not Threadsafe.
 # .. see uwescience/datalogcompiler#39
@@ -326,6 +327,7 @@ class Queries(MyriaPage):
 class Profile(MyriaPage):
 
     def get(self):
+        urlfetch.set_default_fetch_deadline(45)
         conn = self.app.connection
         query_id = self.request.get("queryId")
         subquery_id = self.request.get("subqueryId", 0)
@@ -334,7 +336,7 @@ class Profile(MyriaPage):
         if query_id != '':
             try:
                 # query_status = conn.get_query_status(query_id)
-                query_status = json.loads(requests.get("http://ec2-52-5-229-118.compute-1.amazonaws.com:8750/query/query-"+(query_id), timeout=15).text)
+                query_status = json.loads(requests.get("http://ec2-52-5-229-118.compute-1.amazonaws.com:8750/query/query-"+(query_id)).text)
                 query_status["subqueryId"] = subquery_id
                 subquery_fragments = conn.get_query_plan(query_id, subquery_id)
             except myria.MyriaError:
@@ -374,6 +376,7 @@ class Profile(MyriaPage):
 class Execution(MyriaPage):
 
     def get(self):
+        urlfetch.set_default_fetch_deadline(45)
         conn = self.app.connection
         query_id = self.request.get("queryId")
         subquery_id = self.request.get("subqueryId", 0)
@@ -382,7 +385,7 @@ class Execution(MyriaPage):
         if query_id != '':
             try:
                 # query_status = conn.get_query_status(query_id)
-                query_status = json.loads(requests.get("http://ec2-52-5-229-118.compute-1.amazonaws.com:8750/query/query-"+(query_id), timeout=15).text)
+                query_status = json.loads(requests.get("http://ec2-52-5-229-118.compute-1.amazonaws.com:8750/query/query-"+(query_id)).text)
                 query_status["subqueryId"] = subquery_id
                 subquery_fragments = conn.get_query_plan(query_id, subquery_id)
             except myria.MyriaError:
