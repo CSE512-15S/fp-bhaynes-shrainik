@@ -131,7 +131,7 @@ function BrushSlider (domain, interval, onInterval, onValueChanged) {
               .transition()
               .duration(interval * 1000)
               .ease(d3.ease('linear'))
-              .attr("cx", +handle.attr('cx') + scale(interval));
+              .attr("cx", +handle.attr('cx') + scale(0.5));
         }
 
         d3.timer(timer, interval * 1000);
