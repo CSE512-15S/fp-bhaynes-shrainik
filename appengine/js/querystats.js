@@ -19,7 +19,7 @@ var updateQueryStats = function(element, queryStatus) {
                 myria: myriaConnection,
                 query: queryId,
                 subquery: data[0],
-                fragmentIndex: data[1],
+                fragmentId: data[1],
                 system: data[2]
             });
 
