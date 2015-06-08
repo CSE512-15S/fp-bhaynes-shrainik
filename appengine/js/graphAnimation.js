@@ -8,7 +8,7 @@ function GraphAnimation (graph, scales, animationDuration, arrowSize, markerSize
         this.updateFragments(aggregates, fragment);
         this.updateOperators(aggregates, fragment);
         this.updateSkewMarkers();
-        this.updateSkewHighlight(profiling, fragment);
+        //this.updateSkewHighlight(profiling, fragment);
     };
 
     GraphAnimation.prototype.updateOperators = function(aggregates, fragment, path) {
@@ -66,7 +66,7 @@ function GraphAnimation (graph, scales, animationDuration, arrowSize, markerSize
         d3.selectAll(path || 'g.link marker path.skew')
           .filter(isInCurrentFragment(fragment, 'src'))
           .transition()
-          .delay(animationDuration)
+          .duration(animationDuration)
           .attr('fill', function(d) { return scales.skewColor(d3.mean(d.skews || [0])); })
           .attr("d", function(d) {
               d3.selectAll(path || 'g.link marker path:not(.skew)')

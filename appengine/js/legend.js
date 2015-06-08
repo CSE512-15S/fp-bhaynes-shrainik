@@ -146,15 +146,16 @@ function Legend (scales, arrowSize, markerSize, width, height, offset) {
                             function (offset, skew) {
                                 legend.append("path")
                                       .attr('transform', 'translate(' + offset + ', -12)')
-                                      .attr('fill', scales.skewBackgroundColor(skew))
-                                      .attr("d", "M 0,0 V " + (arrowSize * 2) + " L " + [markerSize, arrowSize] + " Z").tooltip(skew+ " worker skew");
+                                      .attr('fill', scales.skewColor(skew))
+                                      .attr("d", "M 0,0 V " + (arrowSize * 2) + " L " + [markerSize, arrowSize] + " Z")
+                                      .tooltip(skew+ " normalized mean worker skew over previous 2 seconds");
 
                                 legend.append('path')
                                       .attr('transform', 'translate(' + offset + ', -12)')
                                       .attr('fill', scales.skewColor(skew))
                                       .attr("d", function () {
-                                        return "M 0," + (arrowSize * 2 - 4) + " L " + [markerSize, arrowSize] + " Z";
-                                        }).tooltip(skew+ " worker skew");
+                                        return "M 0," + (arrowSize * 2 - 4) + " L " + [markerSize, arrowSize] + " Z"; })
+                                      .tooltip(skew+ " normalized mean worker skew over previous 2 seconds");
 
                                 return offset + separation;
                             },
