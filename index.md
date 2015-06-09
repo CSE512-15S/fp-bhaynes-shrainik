@@ -7,7 +7,8 @@
 2. Shrainik Jain shrainik@cs.washington.edu
 
 ## Abstract
-** -- todo -- **
+Hybrid databases have recently gained a lot of attention because of the promise they show in several prominent use cases in scientific data management. 
+A hybrid distributed database system usually consists of multiple underlying databases with different data models. Better understand such systems, and aid their developers and users we present a query profiling and visualization tool for queries authored over these hybrid systems. Our approach is to extend an existing visualization tool for distributed databases (Perfopticon) to support multiple component databases.
 
 
 ## In action
