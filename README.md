@@ -7,7 +7,7 @@ CSE-512 Final Project: HybridPerfopticon
 2. Shrainik Jain shrainik@cs.washington.edu
 
 ## Summary
-HybridPerfopticon extends Perfopticon to support hybrid databases. This required significant system building effort and understanding the exisiting perfopticon architecture. We needed a mechanism to find equivalence betweent the SciDB world and Myria world. Since the project had to be scoped down to 3 weeks, we made certain assumptions and tried to use the existing architectures as much as possible. We still needed an interface between Myria and SciDB, a rest Server to serve the hybrid plans and other profiling requests from perfopticon. Also, since Brandon had already [extended Perfopticon]() to show dynamic visualizations (tuple flow info. etc.) we built on top of that rather than the vannila perfopticon. 
+HybridPerfopticon extends Perfopticon to support hybrid databases. This required significant system building effort and understanding the exisiting perfopticon architecture. We needed a mechanism to find equivalence betweent the SciDB world and Myria world. Since the project had to be scoped down to 3 weeks, we made certain assumptions and tried to use the existing architectures as much as possible. We still needed an interface between Myria and SciDB, a rest Server to serve the hybrid plans and other profiling requests from perfopticon. Also, since Brandon had already [extended Perfopticon](https://github.com/CSE512-15S/fp-bhaynes-shrainik/blob/master/dynamic-query-excerpt.md) to show dynamic visualizations (tuple flow info. etc.) we built on top of that rather than the vannila perfopticon. 
 
 ## Design Process and Work Breakdown
 
