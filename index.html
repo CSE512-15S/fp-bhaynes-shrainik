@@ -1,0 +1,212 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<style>
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote {
+    margin: 0;
+    padding: 0;
+}
+body {
+    font-family: "Helvetica Neue", Helvetica, "Hiragino Sans GB", Arial, sans-serif;
+    font-size: 13px;
+    line-height: 18px;
+    color: #737373;
+    background-color: white;
+    margin: 10px 13px 10px 13px;
+}
+table {
+	margin: 10px 0 15px 0;
+	border-collapse: collapse;
+}
+td,th {	
+	border: 1px solid #ddd;
+	padding: 3px 10px;
+}
+th {
+	padding: 5px 10px;	
+}
+
+a {
+    color: #0069d6;
+}
+a:hover {
+    color: #0050a3;
+    text-decoration: none;
+}
+a img {
+    border: none;
+}
+p {
+    margin-bottom: 9px;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: #404040;
+    line-height: 36px;
+}
+h1 {
+    margin-bottom: 18px;
+    font-size: 30px;
+}
+h2 {
+    font-size: 24px;
+}
+h3 {
+    font-size: 18px;
+}
+h4 {
+    font-size: 16px;
+}
+h5 {
+    font-size: 14px;
+}
+h6 {
+    font-size: 13px;
+}
+hr {
+    margin: 0 0 19px;
+    border: 0;
+    border-bottom: 1px solid #ccc;
+}
+blockquote {
+    padding: 13px 13px 21px 15px;
+    margin-bottom: 18px;
+    font-family:georgia,serif;
+    font-style: italic;
+}
+blockquote:before {
+    content:"\201C";
+    font-size:40px;
+    margin-left:-10px;
+    font-family:georgia,serif;
+    color:#eee;
+}
+blockquote p {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 18px;
+    margin-bottom: 0;
+    font-style: italic;
+}
+code, pre {
+    font-family: Monaco, Andale Mono, Courier New, monospace;
+}
+code {
+    background-color: #fee9cc;
+    color: rgba(0, 0, 0, 0.75);
+    padding: 1px 3px;
+    font-size: 12px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+}
+pre {
+    display: block;
+    padding: 14px;
+    margin: 0 0 18px;
+    line-height: 16px;
+    font-size: 11px;
+    border: 1px solid #d9d9d9;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+pre code {
+    background-color: #fff;
+    color:#737373;
+    font-size: 11px;
+    padding: 0;
+}
+sup {
+    font-size: 0.83em;
+    vertical-align: super;
+    line-height: 0;
+}
+* {
+	-webkit-print-color-adjust: exact;
+}
+@media screen and (min-width: 914px) {
+    body {
+        width: 854px;
+        margin:10px auto;
+    }
+}
+@media print {
+	body,code,pre code,h1,h2,h3,h4,h5,h6 {
+		color: black;
+	}
+	table, pre {
+		page-break-inside: avoid;
+	}
+}
+</style>
+<title>Team Members</title>
+
+</head>
+<body>
+<h1>HybridPerfopticon</h1>
+
+<h2>Team Members</h2>
+
+<ol>
+<li>Brandon Haynes bhaynes@cs.washington.edu</li>
+<li>Shrainik Jain shrainik@cs.washington.edu</li>
+</ol>
+
+
+<h2>In action</h2>
+
+<p><img src="screenshot.png" width="350" alt="Screenshot of HybridPerfopticon" /></p>
+
+<h2>Running Instructions</h2>
+
+<p>The <a href="http://myria.cs.washington.edu">Myria</a> database management system leverages Perfopticon as a query visualization tool (via the <a href="https://github.com/uwescience/myria-web">Myria webserver</a> project).  Since this project is a Perfopticon extension, we therefore elected to extend <code>Myria-Web</code> to demonstrate its features.</p>
+
+<p>Accordingly, the installation process requires the following steps:</p>
+
+<h3>Prerequisites</h3>
+
+<ol>
+<li>Install the <a href="https://developers.google.com/appengine/downloads#Google_App_Engine_SDK_for_Python">Google App Engine SDK for Python</a></li>
+</ol>
+
+
+<h3>Installation</h3>
+
+<ol>
+<li>Clone this <a href="https://github.com/CSE512-15S/a3-haynesb">repository</a> (<code>git clone https://github.com/CSE512-15S/a3-haynesb.git</code>)</li>
+<li>Update repository submodules (<code>git submodule init</code> and <code>git submodule update</code>)</li>
+<li>Then setup the module as described in the Raco <a href="https://github.com/uwescience/raco/blob/master/README.md">README</a>.</li>
+<li>The PLY library used to parse programs in the Myria language uses a precompiled parsetab.py in the <code>raco</code> submodule. This file is not required, but dramatically speeds up the parser load time (which happens for every request to the app). To generate it, run <code>scripts/myrial examples/reachable.myl</code></li>
+<li>(Optional)  Update <code>appengine/myria_web_main.py</code> to point to a specific MyriaX engine (default=<code>demo.myria.cs.washington.edu</code>)</li>
+<li>Launch the webserver (<code>dev_appserver.py /path/to/myria-web/appengine</code>)</li>
+<li>Execute a query (<code>http://localhost:8080/editor</code>), making sure to select the profiling option</li>
+<li>View query profiling results</li>
+</ol>
+
+
+<h3>Demo</h3>
+
+<p>A running version of HybridPerfopticon is hosted <a href="http://ec2-52-5-229-118.compute-1.amazonaws.com/profile?queryId=5099">here</a>.</p>
+
+<h2>Resources</h2>
+
+<ul>
+<li>We presented a <a href="https://github.com/CSE512-15S/fp-bhaynes-shrainik/blob/master/poster.pdf">poster</a> at CSE-512 poster session.</li>
+<li>A paper describing perfopticon is detail can be found <a href="https://github.com/CSE512-15S/fp-bhaynes-shrainik/blob/master/poster.pdf">here</a>.</li>
+</ul>
+
+</body>
+</html>
