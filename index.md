@@ -6,6 +6,10 @@
 1. Brandon Haynes bhaynes@cs.washington.edu
 2. Shrainik Jain shrainik@cs.washington.edu
 
+## Abstract
+** -- todo -- **
+
+
 ## In action
 
 ![Screenshot of HybridPerfopticon](screenshot.png =350x)
