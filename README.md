@@ -1,9 +1,10 @@
-a3-bhaynes
+CSE-512 Final Project: HybridPerfopticon
 ===============
 
 ## Team Members
 
 1. Brandon Haynes bhaynes@cs.washington.edu
+2. Shrainik Jain shrainik@cs.washington.edu
 
 ## Extending Perfopticon to Support Dynamic Query Visualization
 
