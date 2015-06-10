@@ -8,8 +8,8 @@
 
 ## Resources
 
--	We presented a [poster](https://github.com/CSE512-15S/fp-bhaynes-shrainik/blob/master/final/poster-haynesb-shrainik.pdf) at CSE-512 poster session. 
--	A paper describing perfopticon is detail can be found [here](https://github.com/CSE512-15S/fp-bhaynes-shrainik/blob/master/final/paper-haynesb-shrainik.pdf). 
+-	We presented a [poster](https://github.com/CSE512-15S/fp-bhaynes-shrainik/blob/gh-pages/final/poster-haynesb-shrainik.pdf) at CSE-512 poster session. 
+-	A paper describing perfopticon is detail can be found [here](https://github.com/CSE512-15S/fp-bhaynes-shrainik/blob/gh-pages/final/paper-haynesb-shrainik.pdf). 
 
 
 ## Abstract
