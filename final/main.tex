@@ -26,8 +26,8 @@ breaklinks=true,
 \newcommand{\brandon}[1]{\textsf{\textbf{\textcolor{Blue}{[[#1]]}}}}
 \newcommand{\shrainik}[1]{\textsf{\textbf{\textcolor{Green}{[[#1]]}}}}
 \newcommand{\ea}{{\em et~al.} }
-\newcommand{\ie}{{\em i.e.} }
-\newcommand{\eg}{{\em e.g.}}
+\newcommand{\ie}{{i.e.} }
+\newcommand{\eg}{{e.g.}}
 
 \pagenumbering{arabic}
 
@@ -50,7 +50,7 @@ breaklinks=true,
 \maketitle
 
 \begin{abstract}
-Hybrid databases have recently gained a lot of attention because of the promise they show in several prominent use cases in scientific data management. A hybrid distributed database system usually consists of multiple underlying databases with different data models. In order to better understand such systems we present a query profiling and visualization tool for queries authored over these hybrid systems. Our approach is to extend an existing visualization tool for distributed databases  by adding support for multiple underlying database systems.
+Hybrid databases have recently gained a lot of attention because of the promise they show in several prominent use cases in scientific data management. A hybrid distributed database system usually consists of multiple underlying databases with differing data models. In order to better understand such systems we present a query profiling and visualization tool for queries authored over these hybrid systems. Our approach is to extend an existing visualization tool for distributed databases  by adding support for multiple underlying database systems.
 \end{abstract}
 
 \keywords{Hybrid Databases, Query Visualization} 
@@ -58,20 +58,23 @@ Hybrid databases have recently gained a lot of attention because of the promise 
 \category{H.5.2}{Graphical user interfaces (GUI)}{Miscellaneous}
 
 \section{Introduction}
-Hybrid databases are an emerging area in database research. A hybrid database comprises of dissimilar systems fused together in various ways. Stonebraker \ea. \cite{stonebraker2007end} recently observed that the "one size fits all" era is over, and that the demands of big data management warrant a more federated approach to database design. Lim \ea in Cyclops \cite{cyclops} offered a top-down approach that combined compatible systems into a monolithic whole. Polybase \cite{polybase}, on the other hand, took a bottom-up approach where disparate systems were more loosely connected. To aid understanding, development and debugging of these new systems, we need better visualization tools as well. 
+Stonebraker \ea \cite{stonebraker2007end} recently observed that the "one size fits all" era is over, and that the demands of big data management warrant a more federated approach to database design. Accordingly, "hybrid databases" -- generally dissimilar database management systems (DBMSs) combined in various ways -- are quickly emerging as an active area in database research. 
 
-Many profiling systems exists that target queries in a single database system. For example, SQL Server, Postgres, MySQL all have a basic "`explain`" functionality, which displays a query plan in a human-readable (but often unfriendly) format.  Most `explain`-type tools lack deeper analysis features such as the ability to view performance over the duration of the query.  Further compounding this problem is the limited availability of tools available in a distributed database context, where operator-worker assignments, data skew, and similar problems are much more important.
+There exist many nascent examples of these hybrid DBMSs.  For example, Lim \ea in Cyclops \cite{cyclops} offers a top-down approach that combines compatible systems into a monolithic whole. Polybase \cite{polybase}, on the other hand, elected a bottom-up approach where disparate systems were more loosely coupled. 
 
-Some tools, however, have been recently introduced that attempt to fill this need in a distributed database environment. Gprof \cite{gprof}, is a basic visualization tool for system development; however, it tends to be oriented toward developers.  Dapper \cite{dapper} is Google’s production distributed systems tracing tool designed to aid in distributed system development, but it lacks support for distributed query visualization.  Finally, Ambrose \cite{ambrose} is a framework designed to visualize map-reduce jobs.  While it offers many of the features that one would like to see in a robust distribute database visualization tool it currently targets only the map-reduce space.  
+To aid in understanding, development and debugging of these new systems, it would be advantageous to have visualization tools targeted at this class of DBMS. Unfortunately, most current profiling systems target queries in only a single database system. For example, SQL Server, Postgres, and MySQL all have a basic `explain' functionality, which displays a query plan in a human-readable (but often arcane) format.  Most `explain'-type tools lack deeper analysis features such as the ability to view performance over the duration of the query.  Further compounding this problem is the limited availability of tools available in a distributed database context, where operator-worker assignments, data skew, and similar problems are much more important.
 
-All of these tools lack a complete visualization story (\ie where the tool is useful across both users and system developers) which has resulted in a scarcity of debugging and visualization in the hybrid distributed database space. Perfopticon \cite{perfopticon} seems to be the most advanced system that addresses the profiling requirements for a distributed database system and is targeted to both audiences.
+Some tools, however, have been recently introduced that attempt to fill this need in a distributed database environment. Gprof \cite{gprof} is a basic visualization tool for system development.  However, it tends to be oriented toward developers.  Dapper \cite{dapper} is Google's production tracing tool designed to aid in distributed system development, but it lacks support for distributed query visualization.  Finally, Ambrose \cite{ambrose} is a framework designed to visualize map-reduce jobs.  While it offers many of the features that one would like to see in a robust distributed database visualization tool it currently targets only the map-reduce space and is not (in its current form) generalizable to a more broad set of DBMSs.
 
-This paper presents an extension to Perfopticon to support these emerging use cases, where users require robust profiling of plans that co-occur across multiple database systems.  These present a number of unique challenges, such as how to display non-relational features (e.g., array chunks) in a framework that has heretofore targeted only tuple-based relational systems.  Additionally, a number of corollary challenges arise including coordinating the display of multiple sub-plans, visualizing data transfer between systems, and gathering profiling data from multiple sources.
+Compounding this is the fact that each of these tools lacks a complete visualization story where the tool is broadly useful across both users and system developers.  This has resulted in a scarcity of debugging and visualization in the distributed database space (and as a consequence the hybrid database space). 
 
-For the purpose of demonstration, we chose a hybrid distributed database with SciDB \cite{scidb} and Myria \cite{Myria} as its component systems. SciDB's data-model is completely different from Myria, making it critical to generate semantics for communication between these systems. HybridPerfopticon, our extension to Perfopticon, highlights this communication by helping visualize the overall hybrid query plan, tuple flow among operators, skew in distribution of workloads among system and internal query time statistics while being completely compatible with the existing design.
+To date, the Perfopticon \cite{perfopticon} system is the only system that is broadly-usable by various audiences and also addresses the profiling requirements of distributed database systems.  Perfopticon currently profiles queries on the Myria DBMS \cite{myria}, and can be used to profile similar relational systems.  However, while Perfopticon is able to be extended to other systems, it is not designed to \textit{simultaneously} display the results of queries that cross DBMS boundaries.
 
-In the next section, we present the architecture of the system, which details the steps necessary to orchestration hybrid plan execution, creation, and serving logs(for visualization purposes). This is followed by some results from the use case analysis so far. We conclude by looking at some future extensions to HybridPerfopticon.
+Accordingly, in this paper we present an extension to Perfopticon (aptly named "HybridPerfopticon") designed to expose support for the emerging hybrid use-case, where users require robust profiling of plans that co-occur across multiple database systems.  This class of queries present a number of unique challenges, such as how to display non-relational features (\eg, array chunks) in a framework that has heretofore targeted only tuple-based relational systems.  Additionally, a number of corollary challenges arise including coordinating the display of multiple sub-plans, visualizing data transfer between systems, and gathering profiling data from multiple sources.
 
+For the purpose of demonstration, we created a hybrid distributed database system using SciDB \cite{scidb} and Myria \cite{Myria} as its component systems. SciDB's array-oriented data model is quite dissimilar from Myria's, making it critical to identify equivalent semantics for communication between these two systems. HybridPerfopticon highlights this communication by helping to visualize the overall hybrid query plan, tuple (and array element) flow between operators, skew in distribution of workloads among the constituent systems, and internal query time statistics.  It exposes these additional functions while maintaining complete compatibility with the existing underlying design.
+
+In the next section, we present the architecture of the HybridPerfopticon system, which details the steps necessary to orchestrate hybrid plan execution and create Perfopticon-compatible hybrid plans for visualization purposes. This is followed by some results from the use case analysis. We conclude by looking at some future extensions to HybridPerfopticon.
 
 \section{HybridPerfopticon Architecture}
 
@@ -87,7 +90,7 @@ In this section we describe each of these changes in detail and highlight the tr
 
 \subsection{Generating SciDB Plans \& Metrics}
 
-In the Myria DBMS, each operator is instrumented to store profiling data.  When Perfopticon needs this profiling data, a HTTP request is generated, a query is performed over these data, and the aggregated results are returned.  
+Perfopticon was initially designed to profile plans in the Myria DBMS \cite{perfopticon}.  In the Myria DBMS, each operator is instrumented to store profiling data.  When Perfopticon needs this profiling data, a HTTP request is generated, a query is performed over these data, and the aggregated results are returned.  
 \begin{figure*}
 \centering
 \includegraphics[width=\textwidth]{log-representation.png}
@@ -95,7 +98,9 @@ In the Myria DBMS, each operator is instrumented to store profiling data.  When 
 \label{fig:scidb-log-example}
 \end{figure*}
 
-While we could take a similar route in SciDB by instrumenting each operator and responding to aggregation requests, this would be a time-consuming task and would decrease the performance of SciDB itself.  Instead, we elected an alternative approach: since the relevant profiling metadata is already present in the SciDB logs, we generated our performance metrics by scraping these log files.  While this resulted in decreased performance on startup (approximately ten seconds per 100MB of logging data), our approach has the added benefit of requiring no changes to the SciDB source code.  We expect that this approach would allow for a low-barrier introduction of similar systems, assuming that the salient metrics exist in the log files.
+Our first task was to expose similar functionality targeted at the SciDB DBMS.  While we could take a similar route in SciDB by instrumenting each operator and responding to aggregation requests, this would be a time-consuming task and would decrease the performance of SciDB itself.  Instead, we elected an alternative approach: since the relevant profiling metadata is already present in the SciDB logs, we generated our performance metrics by scraping these log files.  While this resulted in decreased performance on startup\footnotemark, our approach has the added benefit of requiring no changes to the SciDB source code.  We expect that this approach would allow for a low-barrier introduction of similar systems, assuming that the salient metrics already exist in the log files.
+
+\footnotetext{Approximately ten seconds per 100MB of logging data.}
 
 The architecture of our log-scraping process is illustrated in Figure \ref{fig:scidb-log-parsing}.  The entry point to this process is the \texttt{SciDBParser} class, which is responsible (via the \texttt{SciDBLog} class) for converting raw log entries into sequences of statements.  Statements associated with a given query are aggregated into a physical plan, and the operators for that plan are identified and hierarchically assembled within that plan.  During the log interpretation process we also identify performance metrics associated with each executed query and associate those results with the plan.
 
@@ -114,11 +119,11 @@ An illustration of the log-scraping process is listed in Figure \ref{fig:scidb-l
 
 \subsection{Extending Perfopticon to Support Additional DBMSs}
 
-In order to extend Perfopticon to support queries across multiple DBMSs, we first explored the use of existing extension points.  Since Perfopticon is not designed to be directly extendable (e.g., via a plugin-style architecture), extensive modification to the framework would be required to support the kinds of hybrid plans we intended to visualize.  Instead, we elected an alternative approach where a substantial portion of the necessary logic was hidden behind the HTTP server (a "hybrid HTTP server", described in detail below) to which Perfopticon connects for plan and profiling metadata.
+In order to extend Perfopticon to support queries across multiple DBMSs, we first explored the use of existing extension points.  Since Perfopticon is not designed to be directly extendable (\eg, via a plugin-style architecture), extensive modification to the framework would be required to support the kinds of hybrid plans we intended to visualize.  Instead, we elected an alternative approach where a substantial portion of the necessary logic was hidden behind the HTTP server (our "hybrid HTTP server", described in detail below) to which Perfopticon connects for plan and profiling metadata.
 
-While this approach greatly reduced the modifications required to realize our desired functionality, some changes were nonetheless required to Perfopticon itself.  For example, it is necessary to be able to identify the system of origin for each plan fragment; this is important not only for visualization purposes (e.g., to color fragments by system type) but also functionally.  For example, the hybrid HTTP server must know from which system a fragment originated in order to retrieve profiling metrics.
+While this approach greatly reduced the modifications required to realize our desired functionality, some changes were nonetheless required to Perfopticon itself.  For example, it is necessary to be able to identify the system of origin for each plan fragment; this is important not only for visualization purposes (e.g., to color fragments by system type) but also functionally.  For example, the hybrid HTTP server must know from which system a fragment originated in order to retrieve correct profiling metrics.
 
-A number of similar minor modifications were required throughout the Perfopticon framework.  By way of example, SciDB fragments required a SciDB-specific query identifier be attached to each fragment; we envision that additional metadata would be required in order to support other systems.
+A number of similar minor modifications were required throughout the Perfopticon framework.  By way of example, SciDB fragments required a SciDB-specific query identifier be attached to each fragment; we envision that additional metadata would be required in order to support other systems.  For example, in a graph-oriented DBMS it might be useful to associate a range of vertex identifiers operated on by a given operator.
 
 \subsection{Hybrid HTTP server}
 
@@ -127,9 +132,9 @@ Given that HybridPerfopticon continues to expect HTTP responses in the same form
 For each incoming request, our server first distinguished between three cases:
 
 \begin{itemize}
-\item \textbf{Hybrid requests}.  When a request for a hybrid plans was received, copies of the associated Myria and SciDB plans were retrieved (the former via the Myria REST endpoint).  These plans were then combined into a Perfopticon-compatible format using the algorithm identified in Algorithm \ref{alg:create-hybrid-plan}.  Note that this process (i) attaches a system of origin to each fragment, (ii) concatenates all fragments into a single list, and (iii) ensures that parent/child relationships are established between fragment pairs having different origin systems.
-\item \textbf{Myria requests}.  When we receive a request for Myria-oriented, non-hybrid resources (e.g., metadata about a relation that exists on the Myria DBMS).  In this case we issued a 301 redirect to the Myria REST server.  This enabled the hybrid HTTP server to be the sole communication endpoint for Perfopticon without our needing to multiplex across two URLs on the client side.
-\item \textbf{SciDB requests}.  Requests for SciDB profiling data (e.g., the execution time offsets for a SciDB subquery) directly leveraged the profiling logic described above; responses for these requests were in a schema that conformed precisely to their Myria counterparts.
+\item \textbf{Hybrid requests}.  When a request for a hybrid plans is received, copies of the associated Myria and SciDB plans are retrieved (the former via the Myria REST endpoint).  These plans are then combined into a Perfopticon-compatible format using the algorithm described in simplified form in Algorithm \ref{alg:create-hybrid-plan}.  Note that this process (i) attaches a system of origin to each fragment, (ii) concatenates all fragments into a flattened list, and (iii) ensures that parent/child relationships are established between fragment pairs having different origin systems.
+\item \textbf{Myria requests}.  When we receive a request for Myria-specific, non-hybrid resources (e.g., metadata about a relation that exists only on the Myria DBMS), we issue a 301 redirect to the Myria REST server.  This enables the hybrid HTTP server to be the sole communication endpoint for HybridPerfopticon without our needing to choose between two URLs on the client side.
+\item \textbf{SciDB requests}.  Requests for SciDB profiling data (e.g., the execution time offsets for a SciDB subquery) directly leveraged the plan and profiling logic described above; responses for these requests utilized a schema that conformed precisely to their Myria counterparts.
 \end{itemize}
 
 \begin{figure}[h]
@@ -178,8 +183,9 @@ For each incoming request, our server first distinguished between three cases:
 \label{fig:scidb-detail}
 \end{figure*}
 
-We now present an overview of our visual encoding choices and visualization extensions to Perfopticon by presenting a sample use case. The user first inputs the hybrid query as shown in figure \ref{fig:hybrid-plan}. This query is first performs a redimension in SciDB and then loads the results in Myria to perform a join operation. Figure \ref{fig:hybrid-visualization} shows the hybrid visualization for the same. The encoding choice to distinguish fragment of constituent database system is color \ie we color the fragments from SciDB differently than those from Myria.
+We now present an overview of our visual encoding choices and the visualization extensions present in HybridPerfopticon by introducing a sample hybrid use-case. In our example, a user first inputs the hybrid query identified in figure \ref{fig:hybrid-plan}. This query is first performs a redimension in SciDB and then transmits the resulting dataset to Myria.  The Myria DBMS then performs a join operation and stores a projection of the result. 
 
+Figure \ref{fig:hybrid-visualization} shows the hybrid visualization for this query. Note that we distinguish the origin of each fragment by color.
 
 \begin{figure}[h]
 \begin{center}
@@ -196,9 +202,12 @@ We now present an overview of our visual encoding choices and visualization exte
 \caption{A hybrid plan as visualized by HybridPerfopticon.  This hybrid query begins with a SciDB scan/redimension, after which the resulting array is transferred to Myria for joining on a second dataset.}
 \label{fig:hybrid-visualization}
 \end{figure}
-Since SciDB is not multithreaded, part of the hybrid query which is run in SciDB is represented as a single fragment. If the original hybrid query had multiple such SciDB parts interleaved, we would have seen multiple SciDB fragments in the query plan. As with perfopticon, the user can select individual fragments and get detailed profiling views as shown in figure \ref{fig:scidb-detail}. The hybrid-server which serves the plans, also serves the profiling API requests and automatically handles differences between SciDB and Myria fragments. 
 
-Our next extension to perfopticon is to animate the query plan by showing tuple-flow across different operators at various points in query runtime. This is shown to the user by animating the size of the connecting arrows. 
+Since SciDB treats each query as being fully independent, each part of the hybrid query  executed on SciDB is represented as a single fragment. Should the input query have had multiple, potentially-interleaved SciDB queries, we would have seen additional SciDB fragments in the resulting hybrid plan visualization. 
+
+As with Perfopticon, a user can select individual fragments and get detailed profiling views.  This is illustrated in Figure \ref{fig:scidb-detail}. The hybrid HTTP server which serves the plans also returns profiling API requests and automatically reconciles differences between SciDB and Myria fragments. 
+
+The next feature added to HybridPerfopticon involves the animation of the query plan by showing tuple- and array element-flow across different operators at various points in query execution process. This is shown to the user by animating the size of the connecting arrows, and adjusting those sizes during the playback process. The idea here is to give a global perspective of how elements are being processed in the hybrid query, with the intention that a user will quickly identify areas of interest for subsequent drill-down.
 
 \begin{figure}[h]
 \begin{center}
@@ -207,19 +216,22 @@ Our next extension to perfopticon is to animate the query plan by showing tuple-
 \caption{Visualizing skew in inter-database transfers}
 \label{fig:skew}
 \end{figure}
-Final extension in Hybridperfopticon is to show inter-database transfer skew. Skew is binned, color-encoded and displayed as a (normalized) mean over the previous two seconds (in order to avoid distracting rapid fluctuations). 
 
-We would like to point out that animation for very large queries lags a bit due to many API calls to the hybrid plan server. We are exploring possible ways to fix this. 
+Our final extension in HybridPerfopticon involved illustrating inter-database transfer skew.  In our display, skew is binned, color-encoded and displayed as a (normalized) mean over the previous two seconds.  This running average is important to minimize rapid fluctuation which are both distracting and serve to conceal the far more important global patterns of skew that occur in this class of queries. 
+
+%We would like to point out that animation for very large queries lags a bit due to many API calls to the hybrid plan server. We are exploring possible ways to fix this. 
 
 \section{Conclusions \& Future Work}
 
-In this work we described HybridPerfopticon, a visualization tool for hybrid queries that cross DBMS boundaries.  A tool that does so is critically needed, given that the performance profiles of this class of queries are not currently well-understood.  Accordingly, we expect that this tool will serve as a useful means by which the hybrid DBMS space may be explored.
+In this work we described HybridPerfopticon, a visualization tool for hybrid queries that cross DBMS boundaries.  A tool that does so is critically needed, especially given that the performance profiles of this class of queries are not well-understood.  Accordingly, we expect that this tool will serve as a useful means by which the hybrid DBMS space may be explored.
 
-While our approach of using existing log files to generate performance metrics is certainly not novel, the use of log file parsing to quickly add a second DBMS to the visualization framework represents an opportunity to extend the reach of HybridPerfopticon to a wide-ranging set of systems.  Future work should evaluate the applicability of this approach, and if generalizable, additional attention should be paid to identifying the optimal interface by which logging metadata may be exposed to HybridPerfopticon.
+While our approach of using existing log files to generate performance metrics is certainly not novel, the use of log file parsing to quickly add a second DBMS to a query visualization framework represents an opportunity to extend the reach of HybridPerfopticon to a wide-ranging set of systems.  Future work should evaluate the applicability of this approach, and if generalizable, additional attention should be paid to identifying the optimal interface by which logging metadata may be exposed to HybridPerfopticon.
 
 However, while our log-parsing approach allowed us to quickly expose profiling data for a second DBMS inside HybridPerfopticon, more work remains to be done.  In particular, the hybrid HTTP server needs a far more robust caching subsystem; in particular, increasingly large logging files will quickly lead to an intractable startup time.  This would be easily remedied by ensuring that the results of the parsing operation were themselves logged to a DBMS for quick subsequent retrieval.
 
-Finally, future work should evaluate how to best degrade in the face of differing levels of profiling granularity.  For example, we produced SciDB profiling metrics at the millisecond level, whereas Myria profiles at nanosecond granularity.  A hybrid visualization framework should be able to gracefully reconcile both; similarly, we expect that some systems will not have support for some profiling areas and that the framework should evolve to handle these cases.
+Additionally, future work should evaluate how to best degrade in the face of differing levels of profiling granularity.  For example, we were able to produce SciDB profiling metrics at the millisecond level, whereas Myria profiles at nanosecond granularity.  A hybrid visualization framework should be able to gracefully reconcile both; similarly, we expect that some systems will not have support for some profiling areas and that the framework should evolve to gracefully handle these cases.
+
+Finally, given that we hypothesize that hybrid queries will tend to be larger than their single-database counterparts, it may be the case that the resulting plans with numerous fragments are not easily navigated in the HybridPerfopticon system.  Follow-on work should explore whether these fragments can be combined into larger groupings, either by database system type or (better yet) by grouping fragments by higher-level function.
 
 \bibliographystyle{abbrv}
 \bibliography{bibliography}
