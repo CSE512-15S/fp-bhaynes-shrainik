@@ -22,6 +22,7 @@ Hybrid databases have recently gained a lot of attention because of the promise 
 ### Demo
 
 A running version of HybridPerfopticon is hosted [here](http://ec2-52-5-229-118.compute-1.amazonaws.com/profile?queryId=21433). 
+And more realistic query can be found [here](http://ec2-52-5-229-118.compute-1.amazonaws.com/profile?queryId=5099)
 
 ## Running Instructions
 
