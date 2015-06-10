@@ -17,7 +17,7 @@ Hybrid databases have recently gained a lot of attention because of the promise 
 
 ## In action
 
-![Screenshot of HybridPerfopticon](screenshot.png =350x)
+![Screenshot of HybridPerfopticon](summary.png =350x)
 
 ### Demo
 
