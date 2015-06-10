@@ -88,12 +88,20 @@ In this section we describe each of these changes in detail and highlight the tr
 \subsection{Generating SciDB Plans \& Metrics}
 
 In the Myria DBMS, each operator is instrumented to store profiling data.  When Perfopticon needs this profiling data, a HTTP request is generated, a query is performed over these data, and the aggregated results are returned.  
+\begin{figure*}
+\centering
+\includegraphics[width=\textwidth]{log-representation.png}
+\caption{SciDB log fragment (abbreviated for readability) and mapped equivalents in the HybridPerfopticon HTTP server}
+\label{fig:scidb-log-example}
+\end{figure*}
 
 While we could take a similar route in SciDB by instrumenting each operator and responding to aggregation requests, this would be a time-consuming task and would decrease the performance of SciDB itself.  Instead, we elected an alternative approach: since the relevant profiling metadata is already present in the SciDB logs, we generated our performance metrics by scraping these log files.  While this resulted in decreased performance on startup (approximately ten seconds per 100MB of logging data), our approach has the added benefit of requiring no changes to the SciDB source code.  We expect that this approach would allow for a low-barrier introduction of similar systems, assuming that the salient metrics exist in the log files.
 
 The architecture of our log-scraping process is illustrated in Figure \ref{fig:scidb-log-parsing}.  The entry point to this process is the \texttt{SciDBParser} class, which is responsible (via the \texttt{SciDBLog} class) for converting raw log entries into sequences of statements.  Statements associated with a given query are aggregated into a physical plan, and the operators for that plan are identified and hierarchically assembled within that plan.  During the log interpretation process we also identify performance metrics associated with each executed query and associate those results with the plan.
 
 An illustration of the log-scraping process is listed in Figure \ref{fig:scidb-log-example}.  In this log fragment (abbreviated for readability), the \texttt{SciDBLogParser} identifies the beginning of the query execution process, identifies (and interprets) the associated physical plan, associates a scatter/gather operation with an underlying operator, and notes the time at which the query is committed.  Each of these entries are converted into an equivalent statement, and the useful metadata for each statement is embedded therein.
+
+
 
 \begin{figure}[h]
 \begin{center}
@@ -103,13 +111,6 @@ An illustration of the log-scraping process is listed in Figure \ref{fig:scidb-l
 \label{fig:scidb-log-parsing}
 \end{figure}
 
-\begin{figure*}[h]
-\begin{center}
-\includegraphics[width=\textwidth]{log-representation.png}
-\end{center}
-\caption{SciDB log fragment (abbreviated for readability) and mapped equivalents in the HybridPerfopticon HTTP server}
-\label{fig:scidb-log-example}
-\end{figure*}
 
 \subsection{Extending Perfopticon to Support Additional DBMSs}
 
@@ -169,6 +170,14 @@ For each incoming request, our server first distinguished between three cases:
 
 \section{Results}
 
+
+\begin{figure*}
+\centering
+\includegraphics[width=\textwidth]{visualization-detail.png}
+\caption{Detailed profiling results for the SciDB fragment in Figure \ref{fig:hybrid-visualization}.}
+\label{fig:scidb-detail}
+\end{figure*}
+
 We now present an overview of our visual encoding choices and visualization extensions to Perfopticon by presenting a sample use case. The user first inputs the hybrid query as shown in figure \ref{fig:hybrid-plan}. This query is first performs a redimension in SciDB and then loads the results in Myria to perform a join operation. Figure \ref{fig:hybrid-visualization} shows the hybrid visualization for the same. The encoding choice to distinguish fragment of constituent database system is color \ie we color the fragments from SciDB differently than those from Myria.
 
 
@@ -199,13 +208,6 @@ Our next extension to perfopticon is to animate the query plan by showing tuple-
 \label{fig:skew}
 \end{figure}
 Final extension in Hybridperfopticon is to show inter-database transfer skew. Skew is binned, color-encoded and displayed as a (normalized) mean over the previous two seconds (in order to avoid distracting rapid fluctuations). 
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{visualization-detail.png}
-\caption{Detailed profiling results for the SciDB fragment in Figure \ref{fig:hybrid-visualization}.}
-\label{fig:scidb-detail}
-\end{figure*}
 
 We would like to point out that animation for very large queries lags a bit due to many API calls to the hybrid plan server. We are exploring possible ways to fix this. 
 
