@@ -35,7 +35,7 @@ Accordingly, the installation process requires the following steps:
 
 ### Installation
 
-1. Clone this [repository](https://github.com/CSE512-15S/a3-haynesb) (`git clone https://github.com/CSE512-15S/a3-haynesb.git`)
+1. Clone this [repository](https://github.com/CSE512-15S/fp-bhaynes-shrainik.git) (`git clone https://github.com/CSE512-15S/fp-bhaynes-shrainik.git`)
 2. Update repository submodules (`git submodule init` and `git submodule update`)
 3. Then setup the module as described in the Raco [README](https://github.com/uwescience/raco/blob/master/README.md).
 4. The PLY library used to parse programs in the Myria language uses a precompiled parsetab.py in the `raco` submodule. This file is not required, but dramatically speeds up the parser load time (which happens for every request to the app). To generate it, run `scripts/myrial examples/reachable.myl`
