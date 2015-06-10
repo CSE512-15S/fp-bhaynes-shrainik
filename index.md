@@ -21,6 +21,10 @@ A hybrid distributed database system usually consists of multiple underlying dat
 
 ![Screenshot of HybridPerfopticon](screenshot.png =350x)
 
+### Demo
+
+A running version of HybridPerfopticon is hosted [here](http://ec2-52-5-229-118.compute-1.amazonaws.com/profile?queryId=21433). 
+
 ## Running Instructions
 
 The [Myria](http://myria.cs.washington.edu) database management system leverages Perfopticon as a query visualization tool (via the [Myria webserver](https://github.com/uwescience/myria-web) project).  Since this project is a Perfopticon extension, we therefore elected to extend `Myria-Web` to demonstrate its features.
@@ -42,6 +46,3 @@ Accordingly, the installation process requires the following steps:
 7. Execute a query (`http://localhost:8080/editor`), making sure to select the profiling option
 8. View query profiling results
 
-### Demo
-
-A running version of HybridPerfopticon is hosted [here](http://ec2-52-5-229-118.compute-1.amazonaws.com/profile?queryId=5099). 
