@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<link href="css/codemirror.css" type="text/css" rel="stylesheet" />
+<link href="css/github.css" type="text/css" rel="stylesheet" />
+{% endblock %}
+
+{% block queries_active %} class="active"{% endblock %}
+
+{% block content %}
+	<div class="panel panel-primary">
+		<div class="panel-heading clearfix query-panel-heading">
+			<form role="search">
+				<div class="form-group">
+					<div class="input-group input-group-sm pull-right" style="max-width:40%;">
+						<input type="text" class="form-control" name="q" placeholder="Search queries" value="{{query_string}}">
+						<span class="input-group-btn">
+							<button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search"></span></button>
+						</span>
+					</div>
+				</div>
+			</form>
+			<h3 class="panel-title pull-left">
+				Myria Query Log
+			</h3>
+		</div>
+		<table class="table table-condensed">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>Query</th>
+					<th>Status</th>
+					<th></th>
+					<th>Time elapsed</th>
+					<th>Finished</th>
+				</tr>
+			</thead>
+			{% if not queries %}
+			<tr>
+				<td colspan="7" class="text-center text-muted">
+					<h3>No queries</h3>
+				</td>
+			</tr>
+			{% endif %}
+			{% for q in queries %}
+			<tr class="{{q.bootstrapStatus}} query-row" data-status="{{q.status}}" data-id="{{q.queryId}}">
+				<td class="query-url"><a href="{{q.url}}" target="_blank">{{q.queryId}}</a></td>
+				<td class="query-raw" data-language="{{q.language}}">{{q.rawQuery}}</td>
+				<td class="query-status">{{q.status}}</td>
+				<td>
+					{% if 'QUERY' in q.profilingMode %}
+						{% if q.status == 'SUCCESS' %}
+							<a href="/profile?queryId={{q.queryId}}" class="glyphicon glyphicon-dashboard" title="Visualization of query profiling" data-toggle="tooltip"></a>
+						{% elif q.status in ['RUNNING', 'ACCEPTED'] %}
+							<span class="glyphicon glyphicon-dashboard" title="Visualization will be available when the query has finished" data-toggle="tooltip"></span>
+						{% else %}
+							<span class="glyphicon glyphicon-dashboard" title="Visualization not available for failed queries" data-toggle="tooltip"></span>
+						{% endif %}
+					{% else %}
+						<span title="Profiling not enabled for this query" data-toggle="tooltip">-</span>
+					{% endif %}
+				</td>
+				<td class="query-elapsed">{{q.elapsedStr}}</td>
+				<td class="query-finish">
+					{% if q.status in ['RUNNING', 'ACCEPTED'] %}
+						<a href="{{q.url}}" class="kill-query glyphicon glyphicon-remove-circle text-danger" title="Kill query {{q.queryId}}" data-toggle="tooltip"></a>
+					{% else %}
+						<abbr class="timeago" title="{{q.finishTime}}">{{q.finishTime}}</abbr>
+					{% endif %}
+				</td>
+			</tr>
+			{% endfor %}
+		</table>
+		<div class="text-center">
+			<ul class="pagination">
+				<li>
+					<a href="{{ page_url(pagination.prev_args) }}">&laquo;</a>
+				</li>
+					{%- if pagination.can_jump %}
+					{%- for page_args in pagination.iter_pages() %}
+						{% if page_args %}
+							{% if page_args.current %}
+								<li class="active"><span>{{ page_args.page }}</span></li>
+							{% else %}
+								<li>
+									<a href="{{ page_url(page_args.args) }}">{{ page_args.page }}</a>
+								</li>
+							{% endif %}
+						{% else %}
+							<li class="disabled"><span>...</span></li>
+						{% endif %}
+					{%- endfor %}
+				{% endif %}
+				{% if pagination.has_next %}
+				<li>
+					<a href="{{ page_url(pagination.next_args) }}">&raquo;</a>
+				{% else %}
+				<li class="disabled">
+					<span>&raquo;</span>
+				{% endif %}
+				</li>
+			</ul>
+		</div>
+	</div>
+{% endblock %}
+
+{% block footer %}
+<script>
+    {% autoescape false %}
+        var myrialKeywords = {{ myrialKeywords }};
+    {% endautoescape %}
+</script>
+<script type="text/javascript" src="js/queries.js"></script>
+<script type="text/javascript" src="js/codemirror.js"></script>
+<script type="text/javascript" src="js/runmode.js"></script>
+<script type="text/javascript" src="js/myrial.js"></script>
+<script type="text/javascript" src="js/sql.js"></script>
+<script type="text/javascript" src="js/prolog.js"></script>
+<script type="text/javascript">
+$(function () {
+    var addCodeMirror = function (language, syntaxmode) {
+        var selector = "td.query-raw[data-language='" + language + "']";
+        $(selector).each(function (index, elt) {
+            elt = $(elt);
+            var text = elt.text();
+            var pre = document.createElement('pre');
+            pre.className += "CodeMirror";
+            elt.empty().append(pre);
+            CodeMirror.runMode(text, {name: syntaxmode, singleLineStringErrors: false}, pre);
+        });
+	};
+	addCodeMirror('myrial', 'myrial');
+	addCodeMirror('sql', 'text/x-sql');
+	addCodeMirror('datalog', 'prolog');
+});
+</script>
+{% endblock %}
