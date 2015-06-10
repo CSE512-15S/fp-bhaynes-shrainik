@@ -31,7 +31,7 @@ var updateQueryStats = function(element, queryStatus) {
         if(data.length == 0)
             callback(aggregate);
         else if(!data[0][0])
-            return getTransferredElements(queryId, data.splice(0, 1), aggregate, callback);
+            return getTransferredElements(queryId, data.splice(1), aggregate, callback);
         else
             return getTuples(queryId, data.shift(), function(d) {
                 var tuples = d.reduce(function(a,b) { return a + b.numTuples; }, 0);
