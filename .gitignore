@@ -1,0 +1,8 @@
+*.pyc
+.DS_Store
+.*.swp
+appengine/VERSION
+appengine/BRANCH
+/google_appengine
+/google_appengine*.zip
+.idea
