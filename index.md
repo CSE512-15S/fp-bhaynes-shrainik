@@ -6,6 +6,12 @@
 1. Brandon Haynes bhaynes@cs.washington.edu
 2. Shrainik Jain shrainik@cs.washington.edu
 
+## Resources
+
+-	We presented a [poster](https://github.com/CSE512-15S/fp-bhaynes-shrainik/blob/master/final/poster.pdf) at CSE-512 poster session. 
+-	A paper describing perfopticon is detail can be found [here](https://github.com/CSE512-15S/fp-bhaynes-shrainik/blob/master/final/paper.pdf). 
+
+
 ## Abstract
 Hybrid databases have recently gained a lot of attention because of the promise they show in several prominent use cases in scientific data management. 
 A hybrid distributed database system usually consists of multiple underlying databases with different data models. Better understand such systems, and aid their developers and users we present a query profiling and visualization tool for queries authored over these hybrid systems. Our approach is to extend an existing visualization tool for distributed databases (Perfopticon) to support multiple component databases.
@@ -39,8 +45,3 @@ Accordingly, the installation process requires the following steps:
 ### Demo
 
 A running version of HybridPerfopticon is hosted [here](http://ec2-52-5-229-118.compute-1.amazonaws.com/profile?queryId=5099). 
-
-## Resources
-
--	We presented a [poster](https://github.com/CSE512-15S/fp-bhaynes-shrainik/blob/master/poster.pdf) at CSE-512 poster session. 
--	A paper describing perfopticon is detail can be found [here](https://github.com/CSE512-15S/fp-bhaynes-shrainik/blob/master/poster.pdf). 
