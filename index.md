@@ -8,8 +8,8 @@
 
 ## Resources
 
--	We presented a [poster](https://github.com/CSE512-15S/fp-bhaynes-shrainik/blob/gh-pages/final/poster-haynesb-shrainik.pdf) at CSE-512 poster session. 
--	A paper describing perfopticon is detail can be found [here](https://github.com/CSE512-15S/fp-bhaynes-shrainik/blob/gh-pages/final/paper-haynesb-shrainik.pdf). 
+-	We presented a [poster](https://github.com/CSE512-15S/fp-bhaynes-shrainik/blob/gh-pages/final/poster-haynesb-shrainik.pdf) at CSE-512 poster session.
+-	A paper describing perfopticon is detail can be found [here](https://github.com/CSE512-15S/fp-bhaynes-shrainik/blob/gh-pages/final/paper-haynesb-shrainik.pdf).
 
 
 ## Abstract
@@ -21,8 +21,8 @@ Hybrid databases have recently gained a lot of attention because of the promise 
 
 ### Demo
 
-A running version of HybridPerfopticon is hosted [here](http://ec2-52-5-229-118.compute-1.amazonaws.com/profile?queryId=21433). 
-And more realistic query can be found [here](http://ec2-52-5-229-118.compute-1.amazonaws.com/profile?queryId=5099).
+A running version of HybridPerfopticon is hosted [here](http://ec2-52-5-229-118.compute-1.amazonaws.com/profile?queryId=21433).
+A more realistic query can be viewed [here](http://ec2-52-5-229-118.compute-1.amazonaws.com/profile?queryId=5099).
 
 ## Running Instructions
 
